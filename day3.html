@@ -42,6 +42,16 @@
   .card h4 { margin-top: 0; color: var(--primary-dark); }
   .card.warn { border-left-color: var(--accent); background: #fff4ee; }
   .card.ok { border-left-color: var(--success); background: #f0fdf4; }
+  .card { position: relative; }
+  .card-close { position: absolute; top: 8px; right: 10px; background: transparent; border: 1px solid transparent; color: #cbd5e1; cursor: pointer; font-size: 18px; line-height: 1; padding: 0 8px; border-radius: 4px; transition: all 0.15s; z-index: 2; }
+  .card:hover .card-close { color: var(--muted); }
+  .card-close:hover { background: var(--accent); color: white !important; border-color: var(--accent); }
+  .card.collapsed { display: none; }
+  .grid-2.has-collapsed { grid-template-columns: 1fr; }
+  .grid-3.has-collapsed { grid-template-columns: 1fr 1fr; }
+  .restore-hint { display: none; font-size: 11px; color: var(--muted); margin-top: 8px; cursor: pointer; user-select: none; }
+  .restore-hint.show { display: inline-block; }
+  .restore-hint:hover { color: var(--primary); }
   .steps { counter-reset: step; margin-top: 16px; }
   .step { counter-increment: step; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px 14px 56px; margin-bottom: 10px; position: relative; font-size: 15px; }
   .step::before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 28px; height: 28px; line-height: 28px; background: var(--primary); color: white; border-radius: 50%; text-align: center; font-weight: 700; font-size: 13px; }
@@ -490,6 +500,9 @@ slides.forEach((slide) => {
 
 function showSlide(i) {
   if (i < 0 || i >= slides.length) return;
+  document.querySelectorAll('.card.collapsed').forEach(c => c.classList.remove('collapsed'));
+  document.querySelectorAll('.has-collapsed').forEach(g => g.classList.remove('has-collapsed'));
+  document.querySelectorAll('.restore-hint.show').forEach(h => h.classList.remove('show'));
   currentSlide = i;
   document.querySelectorAll('.slide').forEach((el, idx) => el.classList.toggle('active', idx === i));
   slideInfo.textContent = `${i + 1} / ${slides.length}`;
@@ -532,6 +545,37 @@ function initChecklists() {
   });
 }
 initChecklists();
+initCardClosers();
+
+function initCardClosers() {
+  document.querySelectorAll('.grid-2 > .card, .grid-3 > .card').forEach(card => {
+    if (card.querySelector('.card-close')) return;
+    const btn = document.createElement('button');
+    btn.className = 'card-close';
+    btn.innerHTML = '×';
+    btn.title = '閉じる（次のスライドに移動すると元に戻る）';
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      card.classList.add('collapsed');
+      const grid = card.parentElement;
+      grid.classList.add('has-collapsed');
+      let hint = grid.parentElement.querySelector(':scope > .restore-hint');
+      if (!hint) {
+        hint = document.createElement('span');
+        hint.className = 'restore-hint';
+        hint.textContent = '↩ 閉じたカードを元に戻す';
+        hint.addEventListener('click', () => {
+          grid.querySelectorAll('.card.collapsed').forEach(c => c.classList.remove('collapsed'));
+          grid.classList.remove('has-collapsed');
+          hint.classList.remove('show');
+        });
+        grid.parentElement.insertBefore(hint, grid.nextSibling);
+      }
+      hint.classList.add('show');
+    });
+    card.appendChild(btn);
+  });
+}
 </script>
 </body>
 </html>
