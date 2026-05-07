@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3: データとスライドを自動化する</title>
+<style>
+  :root {
+    --primary: #6c47ff; --primary-dark: #4a2bd4;
+    --bg: #f6f5fa; --slide-bg: #ffffff;
+    --text: #1a1a2e; --muted: #6b7280; --accent: #ff6b35;
+    --code-bg: #1e1e2e; --code-text: #e0e0f0;
+    --border: #e5e5ea; --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; z-index: 10; gap: 16px; }
+  .back-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--muted); text-decoration: none; transition: all 0.15s; }
+  .back-btn:hover { background: #f0eefc; color: var(--primary); border-color: var(--primary); }
+  .topbar h1 { font-size: 14px; font-weight: 600; flex: 1; }
+  .topbar h1 .day-tag { color: var(--primary); margin-right: 8px; }
+  .stage { position: absolute; top: 56px; bottom: 64px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .slide { background: var(--slide-bg); width: 100%; max-width: 1200px; height: 100%; max-height: 720px; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 48px 64px; overflow: auto; display: none; animation: fadeIn 0.3s ease; }
+  .slide.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .slide h2 { font-size: 32px; font-weight: 700; margin-bottom: 8px; border-left: 6px solid var(--primary); padding-left: 16px; }
+  .slide h3 { font-size: 20px; margin: 20px 0 12px; color: var(--primary-dark); }
+  .slide h4 { font-size: 16px; margin: 16px 0 8px; }
+  .slide p { margin-bottom: 12px; font-size: 15px; }
+  .slide ul, .slide ol { margin: 12px 0 12px 24px; }
+  .slide li { margin-bottom: 6px; font-size: 15px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .title-slide { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%; }
+  .title-slide.active { display: flex; }
+  .title-slide .day-num { font-size: 14px; color: var(--primary); letter-spacing: 0.2em; font-weight: 600; margin-bottom: 16px; }
+  .title-slide h1 { font-size: 56px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; margin-bottom: 16px; border: none; padding: 0; }
+  .title-slide .lead { font-size: 20px; color: var(--muted); margin-bottom: 32px; }
+  .title-slide .agenda { background: #f8f7fc; border-radius: 12px; padding: 24px 32px; text-align: left; max-width: 640px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+  .card { background: #f8f7fc; border-radius: 10px; padding: 18px; border-left: 4px solid var(--primary); }
+  .card h4 { margin-top: 0; color: var(--primary-dark); }
+  .card.warn { border-left-color: var(--accent); background: #fff4ee; }
+  .card.ok { border-left-color: var(--success); background: #f0fdf4; }
+  .steps { counter-reset: step; margin-top: 16px; }
+  .step { counter-increment: step; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px 14px 56px; margin-bottom: 10px; position: relative; font-size: 15px; }
+  .step::before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 28px; height: 28px; line-height: 28px; background: var(--primary); color: white; border-radius: 50%; text-align: center; font-weight: 700; font-size: 13px; }
+  .step b { color: var(--primary-dark); }
+  .prompt-box { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 16px 18px; font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace; font-size: 13px; margin: 12px 0; position: relative; white-space: pre-wrap; line-height: 1.55; max-height: 280px; overflow: auto; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copy-btn.copied { background: var(--success); border-color: var(--success); }
+  .ui-hint { display: inline-block; background: #fff4ee; color: #c2410c; border: 1px dashed #fb923c; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; margin: 0 2px; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10; }
+  .nav-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .nav-btn:hover { background: var(--primary-dark); }
+  .nav-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+  .slide-info { font-size: 13px; color: var(--muted); }
+  .progress { flex: 1; max-width: 320px; height: 6px; background: var(--border); border-radius: 3px; margin: 0 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--primary); transition: width 0.3s; }
+  .flow { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .flow-item { background: #fff; border: 2px solid var(--primary); border-radius: 10px; padding: 12px 18px; font-weight: 600; color: var(--primary-dark); text-align: center; }
+  .flow-arrow { color: var(--primary); font-size: 24px; font-weight: bold; }
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { padding-left: 28px; position: relative; margin-bottom: 8px; }
+  .checklist li::before { content: "☐"; position: absolute; left: 0; top: 0; color: var(--primary); font-size: 18px; font-weight: bold; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.2s; z-index: 100; }
+  .toast.show { opacity: 1; }
+  .prof-tabs { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+  .prof-tab { background: #f8f7fc; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--muted); transition: all 0.15s; font-weight: 600; }
+  .prof-tab:hover { background: #f0eefc; color: var(--primary); }
+  .prof-tab.active { background: var(--code-bg); color: white; border-color: var(--code-bg); }
+  .prompt-multi-box { background: var(--code-bg); color: var(--code-text); border-radius: 0 10px 10px 10px; padding: 16px 18px; font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace; font-size: 13px; margin-bottom: 12px; position: relative; line-height: 1.55; max-height: 280px; overflow: auto; }
+  .prompt-content { display: none; white-space: pre-wrap; }
+  .prompt-content.active { display: block; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="claude-chat-course.html" class="back-btn">← トップに戻る</a>
+  <h1><span class="day-tag">DAY 3</span>データとスライドを自動化する</h1>
+</div>
+<div class="stage" id="stage"></div>
+<div class="bottom-nav">
+  <button class="nav-btn" id="prevBtn">← 前へ</button>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span class="slide-info" id="slideInfo">1 / 1</span>
+  <button class="nav-btn" id="nextBtn">次へ →</button>
+</div>
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+const PROFESSIONS = [
+  {key:'sales', label:'営業'},
+  {key:'marketing', label:'マーケ・企画'},
+  {key:'hr', label:'人事'},
+  {key:'finance', label:'経理'},
+  {key:'admin', label:'総務・事務'},
+  {key:'manager', label:'管理職'},
+];
+
+const PROF_PROMPTS = {
+  xlsx_monthly: {
+    sales: `/xlsx 添付したデータを使って、上司に提出できる「営業月次レポート」のExcelファイルを作ってください。
+
+【シート構成】
+1枚目「サマリー」：今月の受注額・新規案件数・進行中案件数を上部に大きく、担当者別の実績一覧を下部に
+2枚目「パイプライン」：受注 / 進行中 / 失注 を分けて整理。各案件の「金額・確度・ネクストアクション」を列で
+3枚目「前月比」：主要KPIの変化を表で。注目すべき変化をコメント
+
+【書式】
+- 数字は3桁カンマ区切り、円表示
+- マイナスは赤字
+- 列幅自動調整、ヘッダー行は薄い青
+
+データに異常値や欠損があれば、まず私に確認してから処理してください。`,
+    marketing: `/xlsx 添付したデータを使って、「マーケ月次レポート」のExcelファイルを作ってください。
+
+【シート構成】
+1枚目「サマリー」：全チャネル合計のCV数・CPA・ROASを上部に大きく、主要トピック3つ（伸びた・落ちた・気になる）を下部に
+2枚目「チャネル別明細」：チャネル × 期間で集計。各チャネルの「インプレッション・クリック・CV・コスト・CPA・ROAS」
+3枚目「前月比」：チャネル別の変化率と要因仮説
+
+【書式】
+- 数字は3桁カンマ区切り、％表示
+- 列幅自動調整、ヘッダー行は薄い青
+
+データに異常値があれば、まず私に確認してから処理してください。`,
+    hr: `/xlsx 添付したデータを使って、「人事月次レポート」のExcelファイルを作ってください。
+
+【シート構成】
+1枚目「サマリー」：今月の応募数・面接数・内定数・入社数を上部に大きく、採用ファネルの推移を下部に
+2枚目「明細」：職種別 × チャネル別の応募・進捗状況
+3枚目「KPIトレンド」：応募→面接→内定 各段階の通過率、離職率（過去半年）
+
+【書式】
+- 数字は3桁カンマ、％表示
+- 列幅自動調整、ヘッダー行は薄い青
+
+データに異常値があれば、まず私に確認してから処理してください。`,
+    finance: `/xlsx 添付したデータを使って、「月次決算レポート」のExcelファイルを作ってください。
+
+【シート構成】
+1枚目「サマリー」：売上・粗利・営業利益を上部に大きく、予算対比・前年同月比を表で
+2枚目「PL明細」：勘定科目別、当月／予算／前年同月／差異 を列で
+3枚目「特記事項」：大きな差異の要因コメント、来月の留意点
+
+【書式】
+- 数字は3桁カンマ、円表示
+- マイナスは赤字、差異率は条件付き書式
+- 列幅自動調整、ヘッダー行は薄い青
+
+データに異常値があれば、まず私に確認してから処理してください。`,
+    admin: `/xlsx 添付したデータを使って、「総務月次レポート」のExcelファイルを作ってください。
+
+【シート構成】
+1枚目「サマリー」：当月の申請件数・備品発注額・施設稼働率を上部に、月次トピックを下部に
+2枚目「申請明細」：部署別 × 申請種別の件数集計
+3枚目「備品在庫」：主要備品の在庫数・発注予定・要補充
+
+【書式】
+- 数字は3桁カンマ
+- 在庫切れ近いものは赤色で強調
+- 列幅自動調整、ヘッダー行は薄い青
+
+データに異常値があれば、まず私に確認してから処理してください。`,
+    manager: `/xlsx 添付したデータを使って、「チーム月次レポート」のExcelファイルを作ってください。
+
+【シート構成】
+1枚目「サマリー」：チーム全体のKPI（◯◯／◯◯／◯◯）を上部に大きく、メンバー別の主な成果を下部に
+2枚目「メンバー別」：メンバー × 業務カテゴリでの実績、稼働率・主要成果物
+3枚目「課題と打ち手」：今月の課題TOP3、来月の打ち手と担当割
+
+【書式】
+- 数字は3桁カンマ
+- 列幅自動調整、ヘッダー行は薄い青
+
+データに異常値があれば、まず私に確認してから処理してください。`,
+  },
+  pptx_15slide: {
+    sales: `/pptx 添付の文書をもとに、社内向け15分プレゼンのPowerPointを作ってください。
+
+【テーマ】来期営業戦略提案
+
+【構成】10枚
+1. 表紙（タイトル・日付・私の名前）
+2. アジェンダ
+3. 今期の振り返り（実績数字3つ）
+4. 市場動向と顧客変化
+5. 競合の動き
+6. 課題3つ（優先度付き）
+7. 戦略A：注力業界アプローチ
+8. 戦略B：既存深耕アプローチ
+9. 推奨案と数値目標
+10. 来期スケジュール・体制
+
+【トーン】
+- 1スライド1メッセージ、文字18pt以上
+- 各スライド下にスピーカーノート
+- グラフが入る位置はプレースホルダーで「[ここにグラフ]」と書いておく`,
+    marketing: `/pptx 添付の文書をもとに、社内向け15分プレゼンのPowerPointを作ってください。
+
+【テーマ】新キャンペーン企画書
+
+【構成】10枚
+1. 表紙
+2. アジェンダ
+3. 背景：解決したい課題
+4. ターゲット定義
+5. 競合キャンペーン分析
+6. キャンペーン全体像
+7. クリエイティブの方向性
+8. メディアプラン・予算
+9. KPIと効果測定方法
+10. スケジュール・実行体制
+
+【トーン】
+- 1スライド1メッセージ、文字18pt以上
+- 各スライド下にスピーカーノート
+- ビジュアル入る位置はプレースホルダーで`,
+    hr: `/pptx 添付の文書をもとに、社内向け15分プレゼンのPowerPointを作ってください。
+
+【テーマ】来期採用計画と研修方針
+
+【構成】10枚
+1. 表紙
+2. アジェンダ
+3. 今期の採用・研修の振り返り
+4. 来期の組織課題
+5. 採用計画（職種・人数・時期）
+6. 採用チャネル戦略
+7. 採用予算
+8. 研修体系と来期重点プログラム
+9. 研修予算と効果測定
+10. 来期スケジュール・体制
+
+【トーン】
+- 1スライド1メッセージ、文字18pt以上
+- 各スライド下にスピーカーノート
+- 数字を視覚化する位置はプレースホルダーで`,
+    finance: `/pptx 添付の文書をもとに、経営会議向け15分プレゼンのPowerPointを作ってください。
+
+【テーマ】月次決算報告
+
+【構成】10枚
+1. 表紙
+2. アジェンダ
+3. 今月のハイライト（数字3つを大きく）
+4. 売上の動き（部門別／プロダクト別）
+5. コストの動き
+6. 営業利益と要因分析
+7. 予算対比
+8. 前年同月比とトレンド
+9. リスクと留意事項
+10. 来月の見通しとアクション
+
+【トーン】
+- 1スライド1メッセージ、文字18pt以上、数字は大きく
+- 各スライド下にスピーカーノート
+- グラフ位置はプレースホルダーで`,
+    admin: `/pptx 添付の文書をもとに、社内向け15分プレゼンのPowerPointを作ってください。
+
+【テーマ】全社新ルール導入提案
+
+【構成】10枚
+1. 表紙
+2. アジェンダ
+3. 背景・現状の課題
+4. 他社事例
+5. 提案する新ルールの全体像
+6. 具体的な変更点（Before / After）
+7. 例外運用の扱い
+8. 周知計画と社員向けFAQ
+9. スケジュール
+10. 想定される質問と回答
+
+【トーン】
+- 1スライド1メッセージ、文字18pt以上
+- 各スライド下にスピーカーノート
+- 図解位置はプレースホルダーで`,
+    manager: `/pptx 添付の文書をもとに、経営層向け15分プレゼンのPowerPointを作ってください。
+
+【テーマ】チーム四半期報告と来期計画
+
+【構成】10枚
+1. 表紙
+2. アジェンダ
+3. 四半期サマリー（KPIの達成状況）
+4. 主な成果（事例3つ）
+5. 主な課題と要因
+6. メンバーの動き（採用・育成・離脱）
+7. 来期の方針
+8. 来期の重点施策3つ
+9. リソース要請（人・予算）
+10. リスクとサポート依頼
+
+【トーン】
+- 1スライド1メッセージ、文字18pt以上
+- 各スライド下にスピーカーノート
+- グラフ位置はプレースホルダーで`,
+  },
+};
+
+function escapeHTML(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function multiPrompt(key) {
+  const prompts = PROF_PROMPTS[key] || {};
+  let html = '<div class="prompt-multi"><div class="prof-tabs">';
+  PROFESSIONS.forEach((p, i) => {
+    html += `<button class="prof-tab${i===0?' active':''}" data-prof="${p.key}" onclick="switchProf(this)">${p.label}</button>`;
+  });
+  html += '</div><div class="prompt-multi-box"><button class="copy-btn" onclick="copyMulti(this)">コピー</button>';
+  PROFESSIONS.forEach((p, i) => {
+    const text = prompts[p.key] || '（このプロンプトは準備中）';
+    html += `<div class="prompt-content${i===0?' active':''}" data-prof="${p.key}">${escapeHTML(text)}</div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function switchProf(btn) {
+  const prof = btn.dataset.prof;
+  const tabs = btn.parentElement;
+  const multi = tabs.parentElement;
+  tabs.querySelectorAll('.prof-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  multi.querySelectorAll('.prompt-content').forEach(c => c.classList.toggle('active', c.dataset.prof === prof));
+}
+
+function copyMulti(btn) {
+  const box = btn.parentElement;
+  const active = box.querySelector('.prompt-content.active');
+  const text = active.innerText.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    btn.textContent = '✓ コピー済'; btn.classList.add('copied');
+    setTimeout(() => { toast.classList.remove('show'); btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1600);
+  });
+}
+
+const slides = [
+  { type: "title", html: `
+    <div class="day-num">DAY 3 / 5  •  2時間</div>
+    <h1>データとスライドを自動化する</h1>
+    <p class="lead">Skills（/xlsx・/pptx）で「Excel職人」「PPT職人」を卒業</p>
+    <div class="agenda">
+      <h3 style="margin-top:0">今日の流れ</h3>
+      <ol>
+        <li>Skillsとは・呼び出し方（10分）</li>
+        <li>/xlsx で表を作る Lv1（30分）</li>
+        <li>/xlsx でグラフ・分析 Lv2（30分）</li>
+        <li>/pptx でスライドを作る Lv1（25分）</li>
+        <li>/pptx でブランド準拠 Lv2（20分）</li>
+        <li>振り返り（5分）</li>
+      </ol>
+    </div>
+  `},
+  { html: `
+    <h2>Skills とは</h2>
+    <p class="subtitle">「定型作業の品質を一定にする道具箱」</p>
+    <div class="flow">
+      <div class="flow-item">通常の依頼<br><small>毎回品質が揺れる</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item" style="border-color:var(--accent);color:var(--accent)">Skill呼び出し<br><small>/xlsx /pptx 等</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">毎回<br>プロ品質</div>
+    </div>
+    <h3>呼び出し方</h3>
+    <div class="steps">
+      <div class="step">入力欄に <span class="ui-hint">/</span>（半角スラッシュ）を打つ</div>
+      <div class="step">候補リストが出るので、使いたいSkillを選ぶ（例：/xlsx）</div>
+      <div class="step">続けて指示を書いて送信</div>
+    </div>
+    <div class="card warn">
+      <p>もしリストに /xlsx が見えない場合は、画面下部 <span class="ui-hint">Settings</span> → <span class="ui-hint">Capabilities</span> や <span class="ui-hint">Tools</span> でファイル作成系の機能をオンにしてください。</p>
+    </div>
+  `},
+  { html: `
+    <h2>ハンズオン①：/xlsx で表を作る（Lv1）</h2>
+    <p class="subtitle">所要 30分 / 用意したCSVを使う</p>
+    <div class="steps">
+      <div class="step">新規チャットを開く（Project外でOK）</div>
+      <div class="step">📎 でCSV / Excelを添付</div>
+      <div class="step">下のプロンプトを送信</div>
+      <div class="step">完成した .xlsx を <span class="ui-hint">Download</span> で取得</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:8px">あなたの職種タブを選んで「コピー」（KPI構成は職種別に最適化済み）</p>
+    ${multiPrompt('xlsx_monthly')}
+  `},
+  { html: `
+    <h2>ハンズオン②：グラフと分析（Lv2）</h2>
+    <p class="subtitle">所要 30分 / 同じデータの続き、または別データで</p>
+    <div class="prompt-box" id="p2"><button class="copy-btn" onclick="copyPrompt('p2', this)">コピー</button>/xlsx 同じデータを使って、意思決定に使える分析レポートを作ってください。
+
+【含めてほしいもの】
+1. 月別推移の折れ線グラフ（複数項目を重ねる）
+2. カテゴリ別の構成比（円グラフ または 100%積み上げ棒）
+3. 異常値の自動検出（直近平均±2σを超えるものに色付け）
+4. 前年同月比の表
+5. 「数字が伝える3つのメッセージ」というセル（要約テキスト）
+
+【追加で】
+- グラフは別シート「グラフ」にまとめる
+- 「メッセージ」セルは私が経営会議で読み上げられる文体で
+
+不足するデータがあれば、何が必要かを先に教えてください。</div>
+    <h3>続きで使える追加質問</h3>
+    <div class="prompt-box" id="p3"><button class="copy-btn" onclick="copyPrompt('p3', this)">コピー</button>このグラフを見て、私が経営会議で受けそうな質問TOP5と、それぞれへの想定回答を準備して。</div>
+  `},
+  { html: `
+    <h2>ハンズオン③：/pptx でスライド（Lv1）</h2>
+    <p class="subtitle">所要 25分 / 議事録 or レポートからスライド化</p>
+    <div class="steps">
+      <div class="step">新規チャット → 元ネタとなる文書（議事録、レポート、メモ）を📎で添付</div>
+      <div class="step">下のプロンプトを送信</div>
+      <div class="step">完成した .pptx を <span class="ui-hint">Download</span></div>
+      <div class="step">PowerPointで開いて、必要に応じて手で微修正</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:8px">あなたの職種タブを選んで「コピー」（テーマ・構成は職種別に最適化済み）</p>
+    ${multiPrompt('pptx_15slide')}
+  `},
+  { html: `
+    <h2>ハンズオン④：ブランド準拠（Lv2）</h2>
+    <p class="subtitle">所要 20分 / 会社の見た目に合わせる</p>
+    <div class="prompt-box" id="p5"><button class="copy-btn" onclick="copyPrompt('p5', this)">コピー</button>/pptx さきほど作ったプレゼンを、以下のブランド設定で作り直してください。
+
+【カラーパレット】
+- メインカラー：（例：#003366）
+- アクセントカラー：（例：#FF6600）
+- 背景：白
+- 文字：濃いグレー（#333333）
+
+【フォント】
+- 見出し：游ゴシック Bold
+- 本文：游ゴシック Regular
+- 数字を強調する箇所：Bebas Neue or Impact
+
+【レイアウト】
+- 各スライド左上に細い色帯（メインカラー）
+- 表紙のみ全面メインカラー、文字白
+- ページ番号を右下、小さく
+
+【ロゴ】
+- ロゴ画像は後で差し込むので、表紙とすべてのスライド右下に「[LOGO]」プレースホルダーを置く</div>
+    <div class="card ok">
+      <h4>応用</h4>
+      <p>会社のスライドテンプレートを📎で添付して「このテンプレートに沿って作って」と頼むと、より精度が上がります。</p>
+    </div>
+  `},
+  { html: `
+    <h2>本日の宿題</h2>
+    <ul class="checklist">
+      <li>作った .xlsx を実際に上司や同僚に見せて、フィードバックをもらう</li>
+      <li>作った .pptx を、明日（または来週）の打ち合わせで実際に使う</li>
+      <li>明日のために、Gmail（または会社で使うメールアプリ）にログインできることを確認</li>
+      <li>明日のために、Googleカレンダー（または会社のカレンダー）にもログインしておく</li>
+    </ul>
+    <div class="card ok">
+      <h4>今日の達成</h4>
+      <p>・/xlsx で月次レポートを自動生成<br>・グラフ＋分析つきレポート完成<br>・/pptx で15枚のスライドを15分で<br>・ブランドに合わせた版も作れた</p>
+    </div>
+    <div class="card warn">
+      <h4>明日の前の確認</h4>
+      <p>会社のセキュリティポリシーで、Claudeに業務メール／カレンダーを接続してよいか必ず確認してください。不可の場合は明日の演習を「個人アカウント」で行います。</p>
+    </div>
+    <p style="text-align:center; margin-top:24px;"><a href="day4.html" style="background:var(--primary); color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-weight:700;">Day 4 へ進む →</a></p>
+  `},
+];
+
+let currentSlide = 0;
+const stage = document.getElementById('stage');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const slideInfo = document.getElementById('slideInfo');
+const progressBar = document.getElementById('progressBar');
+
+slides.forEach((slide) => {
+  const div = document.createElement('div');
+  div.className = 'slide' + (slide.type === 'title' ? ' title-slide' : '');
+  div.innerHTML = slide.html;
+  stage.appendChild(div);
+});
+
+function showSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  currentSlide = i;
+  document.querySelectorAll('.slide').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  slideInfo.textContent = `${i + 1} / ${slides.length}`;
+  progressBar.style.width = `${((i + 1) / slides.length) * 100}%`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === slides.length - 1;
+}
+prevBtn.onclick = () => showSlide(currentSlide - 1);
+nextBtn.onclick = () => showSlide(currentSlide + 1);
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { showSlide(currentSlide + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
+});
+function copyPrompt(id, btn) {
+  const box = document.getElementById(id);
+  const text = box.innerText.replace(/^コピー\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    btn.textContent = '✓ コピー済'; btn.classList.add('copied');
+    setTimeout(() => { toast.classList.remove('show'); btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1600);
+  });
+}
+showSlide(0);
+</script>
+</body>
+</html>

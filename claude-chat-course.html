@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Chat 5日間ハンズオン講座 — トップ</title>
+<style>
+  :root {
+    --primary: #6c47ff;
+    --primary-dark: #4a2bd4;
+    --bg: #f6f5fa;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --accent: #ff6b35;
+    --border: #e5e5ea;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+  }
+  .hero {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .hero .tag {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--primary);
+    padding: 4px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .meta-row span b { color: var(--text); }
+
+  .day-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 48px;
+  }
+  .day-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .day-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+  }
+  .day-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(108, 71, 255, 0.15);
+    border-color: var(--primary);
+  }
+  .day-card .day-num {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .day-card h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .day-card .lead {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    min-height: 44px;
+  }
+  .day-card ul {
+    list-style: none;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .day-card li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+  .day-card li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+  }
+  .day-card .cta {
+    margin-top: 20px;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .info-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .info-section h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--primary-dark);
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .info-item {
+    background: #f8f7fc;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .info-item h4 {
+    font-size: 14px;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+  }
+  .info-item p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .key {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+    color: var(--text);
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 32px; }
+    .container { padding: 32px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hero">
+    <span class="tag">非エンジニア向け / 全5日 / 各回2時間</span>
+    <h1>Claude Chat<br>5日間ハンズオン講座</h1>
+    <p>毎日2時間 × 5日で、Claudeを「明日からの仕事の相棒」に変える実践カリキュラム</p>
+    <div class="meta-row">
+      <span><b>合計</b> 10時間</span>
+      <span><b>用意するもの</b> Claude.ai アカウント / 自分の業務資料</span>
+      <span><b>対象</b> 非エンジニア全般</span>
+    </div>
+    <div style="margin-top:20px; display:inline-block; background: linear-gradient(135deg, #fff4ee, #ffe6d6); border:1px solid #fb923c; padding:10px 20px; border-radius:999px; font-size:13px; color:#c2410c; font-weight:600;">
+      ✨ 主要なハンズオンプロンプトに「職種別タブ」を搭載（営業 / マーケ・企画 / 人事 / 経理 / 総務・事務 / 管理職）
+    </div>
+  </div>
+
+  <div class="day-grid">
+    <a href="day1.html" class="day-card">
+      <span class="day-num">DAY 1</span>
+      <h2>Claudeを自分仕様にする</h2>
+      <p class="lead">Projects・Memoryで「毎回説明しなくていい相棒」を作る</p>
+      <ul>
+        <li>アカウント・UI案内</li>
+        <li>Project作成と指示文設定</li>
+        <li>自分の文体を学習させる</li>
+        <li>Memoryで個人情報を記憶</li>
+      </ul>
+      <div class="cta">講座を始める →</div>
+    </a>
+
+    <a href="day2.html" class="day-card">
+      <span class="day-num">DAY 2</span>
+      <h2>「読む」「まとめる」を委任する</h2>
+      <p class="lead">Files・Artifactsで資料処理を1/10の時間に</p>
+      <ul>
+        <li>PDFを自分視点で要約</li>
+        <li>議事録→ToDoリスト変換</li>
+        <li>Artifactsで1枚資料</li>
+        <li>会話で資料を編集</li>
+      </ul>
+      <div class="cta">講座を始める →</div>
+    </a>
+
+    <a href="day3.html" class="day-card">
+      <span class="day-num">DAY 3</span>
+      <h2>データとスライドを自動化</h2>
+      <p class="lead">/xlsx・/pptxでExcel職人とPPT職人を卒業</p>
+      <ul>
+        <li>/xlsx で月次レポート</li>
+        <li>グラフ・分析の自動生成</li>
+        <li>/pptx で15枚スライド</li>
+        <li>ブランド準拠デザイン</li>
+      </ul>
+      <div class="cta">講座を始める →</div>
+    </a>
+
+    <a href="day4.html" class="day-card">
+      <span class="day-num">DAY 4</span>
+      <h2>周辺ツールと繋いで往復をなくす</h2>
+      <p class="lead">Gmail・Calendar・Driveを1つの相棒に</p>
+      <ul>
+        <li>Gmail接続と未読要約</li>
+        <li>Calendarで週次プラン</li>
+        <li>Driveで資料横断検索</li>
+        <li>3ツール統合プロンプト</li>
+      </ul>
+      <div class="cta">講座を始める →</div>
+    </a>
+
+    <a href="day5.html" class="day-card">
+      <span class="day-num">DAY 5</span>
+      <h2>自分の業務に組み込む</h2>
+      <p class="lead">学んだ機能を「明日からの定常業務」に変える</p>
+      <ul>
+        <li>業務棚卸しワーク</li>
+        <li>1業務をフルClaude化</li>
+        <li>同僚向けデモ準備</li>
+        <li>30日ロードマップ</li>
+      </ul>
+      <div class="cta">講座を始める →</div>
+    </a>
+  </div>
+
+  <div class="info-section">
+    <h3>講座の進め方</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <h4>1日1ページ</h4>
+        <p>各Dayのページで完結。ブックマーク or リンクをカレンダーに貼って毎日開く運用がおすすめ。</p>
+      </div>
+      <div class="info-item">
+        <h4>所要時間</h4>
+        <p>各Day 約2時間。ハンズオン中心なので、Claude.aiを別タブで開いて手を動かしながら進める前提。</p>
+      </div>
+      <div class="info-item">
+        <h4>順番</h4>
+        <p>Day1から順に。Day3以降はDay1で作ったProjectとMemory設定を前提にしています。</p>
+      </div>
+      <div class="info-item">
+        <h4>挫折防止</h4>
+        <p>1日でも空いたら、その日のページを開き直すだけでOK。完璧主義より継続を優先。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h3>各ページ内の操作</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <h4>スライド送り</h4>
+        <p><span class="key">←</span> <span class="key">→</span> キー、または下部の矢印ボタン。<span class="key">Space</span> で次へ。</p>
+      </div>
+      <div class="info-item">
+        <h4>プロンプトのコピー</h4>
+        <p>各プロンプトボックス右上の「コピー」ボタン。Claude.aiの入力欄に貼って使ってください。</p>
+      </div>
+      <div class="info-item">
+        <h4>カッコ内の置き換え</h4>
+        <p>プロンプト内の（  ）部分は必ず自分の状況に書き換えてから送信してください。</p>
+      </div>
+      <div class="info-item">
+        <h4>戻る</h4>
+        <p>各Day画面の左上「← トップに戻る」でこのページへ。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section" style="text-align:center; background: linear-gradient(135deg, #6c47ff, #ff6b35); color: white;">
+    <h3 style="color:white; border-color: rgba(255,255,255,0.5);">準備はいいですか？</h3>
+    <p style="opacity:0.95">まずは Day 1 から。最初の30分で、もう「自分仕様のClaude」が手に入ります。</p>
+    <a href="day1.html" style="display:inline-block; margin-top:16px; background:white; color:var(--primary); padding:12px 32px; border-radius:8px; text-decoration:none; font-weight:700;">Day 1 を始める →</a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 5: 自分の業務に組み込む</title>
+<style>
+  :root {
+    --primary: #6c47ff; --primary-dark: #4a2bd4;
+    --bg: #f6f5fa; --slide-bg: #ffffff;
+    --text: #1a1a2e; --muted: #6b7280; --accent: #ff6b35;
+    --code-bg: #1e1e2e; --code-text: #e0e0f0;
+    --border: #e5e5ea; --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; z-index: 10; gap: 16px; }
+  .back-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--muted); text-decoration: none; transition: all 0.15s; }
+  .back-btn:hover { background: #f0eefc; color: var(--primary); border-color: var(--primary); }
+  .topbar h1 { font-size: 14px; font-weight: 600; flex: 1; }
+  .topbar h1 .day-tag { color: var(--primary); margin-right: 8px; }
+  .stage { position: absolute; top: 56px; bottom: 64px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .slide { background: var(--slide-bg); width: 100%; max-width: 1200px; height: 100%; max-height: 720px; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 48px 64px; overflow: auto; display: none; animation: fadeIn 0.3s ease; }
+  .slide.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .slide h2 { font-size: 32px; font-weight: 700; margin-bottom: 8px; border-left: 6px solid var(--primary); padding-left: 16px; }
+  .slide h3 { font-size: 20px; margin: 20px 0 12px; color: var(--primary-dark); }
+  .slide h4 { font-size: 16px; margin: 16px 0 8px; }
+  .slide p { margin-bottom: 12px; font-size: 15px; }
+  .slide ul, .slide ol { margin: 12px 0 12px 24px; }
+  .slide li { margin-bottom: 6px; font-size: 15px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .title-slide { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%; }
+  .title-slide.active { display: flex; }
+  .title-slide .day-num { font-size: 14px; color: var(--primary); letter-spacing: 0.2em; font-weight: 600; margin-bottom: 16px; }
+  .title-slide h1 { font-size: 56px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; margin-bottom: 16px; border: none; padding: 0; }
+  .title-slide .lead { font-size: 20px; color: var(--muted); margin-bottom: 32px; }
+  .title-slide .agenda { background: #f8f7fc; border-radius: 12px; padding: 24px 32px; text-align: left; max-width: 640px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .card { background: #f8f7fc; border-radius: 10px; padding: 18px; border-left: 4px solid var(--primary); }
+  .card h4 { margin-top: 0; color: var(--primary-dark); }
+  .card.warn { border-left-color: var(--accent); background: #fff4ee; }
+  .card.ok { border-left-color: var(--success); background: #f0fdf4; }
+  .prompt-box { background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 16px 18px; font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace; font-size: 13px; margin: 12px 0; position: relative; white-space: pre-wrap; line-height: 1.55; max-height: 280px; overflow: auto; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copy-btn.copied { background: var(--success); border-color: var(--success); }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10; }
+  .nav-btn { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .nav-btn:hover { background: var(--primary-dark); }
+  .nav-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+  .slide-info { font-size: 13px; color: var(--muted); }
+  .progress { flex: 1; max-width: 320px; height: 6px; background: var(--border); border-radius: 3px; margin: 0 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--primary); transition: width 0.3s; }
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { padding-left: 28px; position: relative; margin-bottom: 8px; }
+  .checklist li::before { content: "☐"; position: absolute; left: 0; top: 0; color: var(--primary); font-size: 18px; font-weight: bold; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.2s; z-index: 100; }
+  .toast.show { opacity: 1; }
+  .prof-tabs { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+  .prof-tab { background: #f8f7fc; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--muted); transition: all 0.15s; font-weight: 600; }
+  .prof-tab:hover { background: #f0eefc; color: var(--primary); }
+  .prof-tab.active { background: var(--code-bg); color: white; border-color: var(--code-bg); }
+  .prompt-multi-box { background: var(--code-bg); color: var(--code-text); border-radius: 0 10px 10px 10px; padding: 16px 18px; font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace; font-size: 13px; margin-bottom: 12px; position: relative; line-height: 1.55; max-height: 280px; overflow: auto; }
+  .prompt-content { display: none; white-space: pre-wrap; }
+  .prompt-content.active { display: block; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="claude-chat-course.html" class="back-btn">← トップに戻る</a>
+  <h1><span class="day-tag">DAY 5</span>自分の業務に組み込む</h1>
+</div>
+<div class="stage" id="stage"></div>
+<div class="bottom-nav">
+  <button class="nav-btn" id="prevBtn">← 前へ</button>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span class="slide-info" id="slideInfo">1 / 1</span>
+  <button class="nav-btn" id="nextBtn">次へ →</button>
+</div>
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+const PROFESSIONS = [
+  {key:'sales', label:'営業'},
+  {key:'marketing', label:'マーケ・企画'},
+  {key:'hr', label:'人事'},
+  {key:'finance', label:'経理'},
+  {key:'admin', label:'総務・事務'},
+  {key:'manager', label:'管理職'},
+];
+
+const PROF_PROMPTS = {
+  full_claudify: {
+    sales: `以下の業務をClaude化する完全な手順を設計してください。
+
+【対象業務】
+週次営業パイプライン報告（毎週金曜午前中に作成）
+
+【現状】
+- やっていること：
+  1. CRMから案件データをエクスポート
+  2. Excelで集計・整形
+  3. 重要案件の進捗を担当者に確認
+  4. 報告メール作成
+  5. 上司・関係部署に送信
+- かかっている時間：約120分
+- 使っているツール：CRM, Excel, Outlook
+- 困っていること：データの体裁を整える時間、案件の優先順位付けの主観差
+
+【Claude化後の理想】
+- 目標時間：30分
+- 自動化したい部分：データ整形、優先順位付け、メール文面作成
+- 人が判断する部分：担当者確認内容、上司への申し送り事項
+
+【出力してほしいもの】
+1. 新しい業務フロー図（人 or Claude を明示）
+2. 各Claude作業の具体的なプロンプト
+3. Project構成（どんな指示書とナレッジを入れるか）
+4. 必要なConnectorとSkill
+5. 失敗しやすいポイントと対策
+6. 1週目・2週目・1ヶ月目それぞれの調整ポイント`,
+    marketing: `以下の業務をClaude化する完全な手順を設計してください。
+
+【対象業務】
+週次施策レポート作成（毎週月曜午前中）
+
+【現状】
+- やっていること：
+  1. 各広告管理画面から数値ダウンロード
+  2. Googleアナリティクスから流入確認
+  3. Excelで集計・前週比計算
+  4. 主要トピック洗い出し
+  5. レポート文面作成
+- かかっている時間：約180分
+- 使っているツール：広告管理画面、GA、Excel、Slides
+- 困っていること：複数ツールを行き来する手間、考察の質のバラつき
+
+【Claude化後の理想】
+- 目標時間：45分
+- 自動化したい部分：数値集計、前週比、文面初稿
+- 人が判断する部分：考察の最終確定、来週の打ち手判断
+
+【出力してほしいもの】
+1. 新しい業務フロー図（人 or Claude を明示）
+2. 各Claude作業の具体的なプロンプト
+3. Project構成
+4. 必要なConnectorとSkill
+5. 失敗しやすいポイントと対策
+6. 1週目・2週目・1ヶ月目の調整ポイント`,
+    hr: `以下の業務をClaude化する完全な手順を設計してください。
+
+【対象業務】
+月次採用進捗レポート（毎月月初）
+
+【現状】
+- やっていること：
+  1. ATSから応募者データ取得
+  2. 面接結果の集計
+  3. チャネル別効果の分析
+  4. 採用責任者向けレポート作成
+  5. 関係部門への共有
+- かかっている時間：約180分
+- 使っているツール：ATS、Excel、Word、Slack
+- 困っていること：データ集計の手間、毎月同じような考察の繰り返し
+
+【Claude化後の理想】
+- 目標時間：45分
+- 自動化したい部分：数値集計、前月比、定型コメント
+- 人が判断する部分：採用方針の調整提言
+
+【出力してほしいもの】
+1. 新しい業務フロー図（人 or Claude を明示）
+2. 各Claude作業の具体的なプロンプト
+3. Project構成
+4. 必要なConnectorとSkill
+5. 失敗しやすいポイントと対策
+6. 1週目・2週目・1ヶ月目の調整ポイント`,
+    finance: `以下の業務をClaude化する完全な手順を設計してください。
+
+【対象業務】
+月次決算レポート作成（月末締め後5営業日以内）
+
+【現状】
+- やっていること：
+  1. 会計システムからエクスポート
+  2. Excelで予実差異分析
+  3. 部門別・科目別集計
+  4. 差異要因のヒアリングと整理
+  5. 経営会議資料作成
+- かかっている時間：約480分（複数日）
+- 使っているツール：会計システム、Excel、PowerPoint
+- 困っていること：差異分析の文章化、毎月の繰り返し作業
+
+【Claude化後の理想】
+- 目標時間：240分
+- 自動化したい部分：データ集計、差異の自動検出、文章下書き
+- 人が判断する部分：差異要因の解釈、経営会議向け表現
+
+【出力してほしいもの】
+1. 新しい業務フロー図
+2. 各Claude作業の具体的なプロンプト
+3. Project構成
+4. 必要なConnectorとSkill
+5. 失敗しやすいポイントと対策
+6. 1週目・2週目・1ヶ月目の調整ポイント`,
+    admin: `以下の業務をClaude化する完全な手順を設計してください。
+
+【対象業務】
+月次申請集計レポートと社内お知らせ作成
+
+【現状】
+- やっていること：
+  1. 各種申請データを集計
+  2. 異常値・遅延の確認
+  3. 部署別集計表作成
+  4. 全社お知らせメール作成
+  5. 来月のリマインドリスト準備
+- かかっている時間：約120分
+- 使っているツール：Excel、社内ポータル、メール
+- 困っていること：お知らせ文の表現の揺れ、毎月の繰り返し
+
+【Claude化後の理想】
+- 目標時間：30分
+- 自動化したい部分：集計、お知らせ文の初稿
+- 人が判断する部分：お知らせのトーン調整、追加で伝えるべき点
+
+【出力してほしいもの】
+1. 新しい業務フロー図
+2. 各Claude作業の具体的なプロンプト
+3. Project構成
+4. 必要なConnectorとSkill
+5. 失敗しやすいポイントと対策
+6. 1週目・2週目・1ヶ月目の調整ポイント`,
+    manager: `以下の業務をClaude化する完全な手順を設計してください。
+
+【対象業務】
+月1回の1on1（5名分）の準備とフォローアップメモ作成
+
+【現状】
+- やっていること：
+  1. 各メンバーの月次成果・状況を整理
+  2. 前回の1on1の宿題確認
+  3. アジェンダ作成
+  4. 1on1実施
+  5. メモを残し、人事や上司に共有
+- かかっている時間：1人あたり約60分（5名で300分）
+- 使っているツール：Notion / Word、カレンダー、Slack
+- 困っていること：準備の負担、フォロー漏れ
+
+【Claude化後の理想】
+- 目標時間：1人あたり20分
+- 自動化したい部分：成果整理、過去メモ要約、アジェンダ初稿、フォローメモ整形
+- 人が判断する部分：個別の踏み込み度、デリケートな話題の扱い
+
+【出力してほしいもの】
+1. 新しい業務フロー図
+2. 各Claude作業の具体的なプロンプト
+3. Project構成（人事関連の機密扱いに注意）
+4. 必要なConnectorとSkill
+5. 失敗しやすいポイントと対策
+6. 1週目・2週目・1ヶ月目の調整ポイント`,
+  },
+};
+
+function escapeHTML(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function multiPrompt(key) {
+  const prompts = PROF_PROMPTS[key] || {};
+  let html = '<div class="prompt-multi"><div class="prof-tabs">';
+  PROFESSIONS.forEach((p, i) => {
+    html += `<button class="prof-tab${i===0?' active':''}" data-prof="${p.key}" onclick="switchProf(this)">${p.label}</button>`;
+  });
+  html += '</div><div class="prompt-multi-box"><button class="copy-btn" onclick="copyMulti(this)">コピー</button>';
+  PROFESSIONS.forEach((p, i) => {
+    const text = prompts[p.key] || '（このプロンプトは準備中）';
+    html += `<div class="prompt-content${i===0?' active':''}" data-prof="${p.key}">${escapeHTML(text)}</div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function switchProf(btn) {
+  const prof = btn.dataset.prof;
+  const tabs = btn.parentElement;
+  const multi = tabs.parentElement;
+  tabs.querySelectorAll('.prof-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  multi.querySelectorAll('.prompt-content').forEach(c => c.classList.toggle('active', c.dataset.prof === prof));
+}
+
+function copyMulti(btn) {
+  const box = btn.parentElement;
+  const active = box.querySelector('.prompt-content.active');
+  const text = active.innerText.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    btn.textContent = '✓ コピー済'; btn.classList.add('copied');
+    setTimeout(() => { toast.classList.remove('show'); btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1600);
+  });
+}
+
+const slides = [
+  { type: "title", html: `
+    <div class="day-num">DAY 5 / 5  •  2時間</div>
+    <h1>自分の業務に組み込む</h1>
+    <p class="lead">学んだ機能を「明日からの定常業務」に変える</p>
+    <div class="agenda">
+      <h3 style="margin-top:0">今日の流れ</h3>
+      <ol>
+        <li>業務棚卸しワーク（30分）</li>
+        <li>1業務をフルClaude化する設計（30分）</li>
+        <li>同僚向けデモの準備（30分）</li>
+        <li>30日ロードマップ作成（20分）</li>
+        <li>修了確認と継続のコツ（10分）</li>
+      </ol>
+    </div>
+  `},
+  { html: `
+    <h2>① 業務棚卸し</h2>
+    <p class="subtitle">所要 30分 / 自分の仕事を「見える化」する</p>
+    <h3>ステップ</h3>
+    <ol>
+      <li>紙 or テキストエディタに、過去2週間で実際にやった仕事を全部書き出す（最低20項目）</li>
+      <li>各項目に <b>頻度</b>（毎日/毎週/毎月/不定期）と <b>所要時間</b> を付ける</li>
+      <li>下のプロンプトに貼って、Claudeに分類してもらう</li>
+    </ol>
+    <div class="prompt-box" id="p1"><button class="copy-btn" onclick="copyPrompt('p1', this)">コピー</button>以下は私が過去2週間に行った業務リストです。Claude化のしやすさで分類してください。
+
+【業務リスト】
+（ここに自分のリストを貼り付け）
+
+【分類軸】
+A：今日からClaudeで完全代替可（読む・要約・転記・定型作成）
+B：Claudeと協働して時短できる（議事録→ToDo、メール下書き等）
+C：人の判断が必要だが下準備をClaudeに任せられる
+D：Claudeでは難しい（対面交渉、機密度が高い等）
+
+【出力】
+- 業務ごとにA/B/C/D判定と理由
+- A判定の業務に、それぞれ使う機能（Project/Skill/Connector）と推奨プロンプト概要
+- 「最初に着手すべきTOP3」をROI順に推薦</div>
+  `},
+  { html: `
+    <h2>② 1業務をフルClaude化（Lv2）</h2>
+    <p class="subtitle">所要 30分 / TOP3の中から1つ選んで完成形まで</p>
+    <h3>設計シート</h3>
+    <p style="font-size:13px;color:var(--muted);margin-top:8px">あなたの職種タブを選んで「コピー」（典型的な業務テンプレを職種別に用意）</p>
+    ${multiPrompt('full_claudify')}
+  `},
+  { html: `
+    <h2>③ 同僚向けデモ準備</h2>
+    <p class="subtitle">所要 30分 / 「自分が学んだ」を「組織の資産」に</p>
+    <h3>3分デモのシナリオを作る</h3>
+    <div class="prompt-box" id="p3"><button class="copy-btn" onclick="copyPrompt('p3', this)">コピー</button>同僚（非エンジニア・Claude未経験者）3〜5人を集めた3分デモのシナリオを設計してください。
+
+【条件】
+- 私が実際に画面を共有しながら見せる
+- 今日設計した「（業務名）」のClaude化を題材に
+- ビフォー（手作業）→ アフター（Claude化）の対比を3分で
+
+【出力】
+1. シナリオ進行表（30秒刻み）：何を話す・何を画面で見せる
+2. 開始トーク（30秒）：相手の関心を掴む一言
+3. クライマックス：一番「おお」と言われそうな瞬間
+4. 締め（30秒）：相手にしてほしいアクション（やってみて等）
+5. 想定質問TOP5と回答
+6. デモが失敗した時のリカバリ文
+
+口頭で読み上げる原稿として、丁寧体で書いて。</div>
+  `},
+  { html: `
+    <h2>④ 30日ロードマップ</h2>
+    <p class="subtitle">所要 20分 / 学習を定着させる仕掛け</p>
+    <div class="prompt-box" id="p4"><button class="copy-btn" onclick="copyPrompt('p4', this)">コピー</button>今日からの30日間で、Claudeを業務に定着させるロードマップを作ってください。
+
+【条件】
+- 平日のみ・1日30分以内の追加投資で済むこと
+- 段階的に難易度を上げる
+- 週末は使わない（疲れる前提）
+
+【週ごとに含めてほしい要素】
+- 今週のメイン目標（1つだけ）
+- 月〜金の日替わりタスク（5つ）
+- 振り返り質問（金曜に自問する3つ）
+- 達成バッジ（できたら自分にご褒美的な何か）
+
+【4週目の最後】
+- この30日を振り返るプロンプトを1つ
+- 次の30日に進むかどうかの判断基準
+
+【トーン】
+ストイックすぎず、続けやすい雰囲気で。</div>
+    <div class="card ok">
+      <h4>仕上げ</h4>
+      <p>このロードマップをカレンダーに転記。1日目から実行開始。</p>
+    </div>
+  `},
+  { html: `
+    <h2>継続のコツ：3つだけ</h2>
+    <p class="subtitle">挫折しないために</p>
+    <div class="grid-3">
+      <div class="card">
+        <h4>① 1日1プロンプト</h4>
+        <p>「毎日30分使う」より「毎日1回は使う」。連続日数を切らないことが最重要。3日空くと戻れない。</p>
+      </div>
+      <div class="card">
+        <h4>② 失敗を保存</h4>
+        <p>うまくいかなかった依頼を別Projectに溜める。月1で見直すと、自分の苦手パターンが見える。</p>
+      </div>
+      <div class="card">
+        <h4>③ 仲間を1人</h4>
+        <p>同じく学んでいる同僚を最低1人作る。週1回プロンプトを交換する習慣で2人とも上達速度が倍になる。</p>
+      </div>
+    </div>
+    <h3>避けたいパターン</h3>
+    <ul class="checklist">
+      <li>完璧なProjectを作ろうとして1週間使わない</li>
+      <li>1度のミスで「やっぱり使えない」と判断する</li>
+      <li>機能を全部使おうとして混乱する → 必要な順に1つずつ</li>
+    </ul>
+  `},
+  { html: `
+    <h2>修了 — 5日間で身につけたもの</h2>
+    <p class="subtitle">確認チェックリスト</p>
+    <ul class="checklist">
+      <li>自分仕様のProjectを最低1つ運用している</li>
+      <li>Memoryに自分の前提情報を覚えさせている</li>
+      <li>PDFや議事録を「自分の視点で」要約させられる</li>
+      <li>Artifactsで1枚資料を作って編集できる</li>
+      <li>/xlsx と /pptx を呼び出して使える</li>
+      <li>最低1つのConnectorを業務で活用している</li>
+      <li>自分の業務を1つフルClaude化する設計ができた</li>
+      <li>同僚に3分デモができる</li>
+      <li>30日ロードマップを持っている</li>
+    </ul>
+    <div class="card ok" style="margin-top:24px;text-align:center">
+      <h3 style="margin:0">明日からの仕事が、今日までと違うことを願っています。</h3>
+      <p style="margin-top:8px">困ったときは、いちばん最初に作ったProjectに「困っている」と話しかけることから始めてください。</p>
+    </div>
+  `},
+  { html: `
+    <h2>付録：今すぐ使える万能プロンプト集</h2>
+    <p class="subtitle">明日からのお守り</p>
+    <h3>朝イチ用</h3>
+    <div class="prompt-box" id="p5"><button class="copy-btn" onclick="copyPrompt('p5', this)">コピー</button>今日のカレンダーとメールを見て、私が朝イチで意識すべき3つを教えて。優先順位の根拠も。</div>
+    <h3>会議直前用</h3>
+    <div class="prompt-box" id="p6"><button class="copy-btn" onclick="copyPrompt('p6', this)">コピー</button>これから「（会議名）」がある。参加者と議題を踏まえて、5分で頭に入れるブリーフィングを作って。</div>
+    <h3>退社前用</h3>
+    <div class="prompt-box" id="p7"><button class="copy-btn" onclick="copyPrompt('p7', this)">コピー</button>今日やったこと（メール送信履歴とカレンダーから）を整理して、明日朝イチで再開しやすいメモを作って。</div>
+    <h3>困った時用</h3>
+    <div class="prompt-box" id="p8"><button class="copy-btn" onclick="copyPrompt('p8', this)">コピー</button>私はいま「（状況）」で困っている。私の立場と過去のやり取りを踏まえて、選択肢を3つ提案して。それぞれの長所短所も。</div>
+    <p style="text-align:center; margin-top:24px;"><a href="claude-chat-course.html" style="background:var(--primary); color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-weight:700;">← トップに戻る</a></p>
+  `},
+];
+
+let currentSlide = 0;
+const stage = document.getElementById('stage');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const slideInfo = document.getElementById('slideInfo');
+const progressBar = document.getElementById('progressBar');
+
+slides.forEach((slide) => {
+  const div = document.createElement('div');
+  div.className = 'slide' + (slide.type === 'title' ? ' title-slide' : '');
+  div.innerHTML = slide.html;
+  stage.appendChild(div);
+});
+
+function showSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  currentSlide = i;
+  document.querySelectorAll('.slide').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  slideInfo.textContent = `${i + 1} / ${slides.length}`;
+  progressBar.style.width = `${((i + 1) / slides.length) * 100}%`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === slides.length - 1;
+}
+prevBtn.onclick = () => showSlide(currentSlide - 1);
+nextBtn.onclick = () => showSlide(currentSlide + 1);
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { showSlide(currentSlide + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
+});
+function copyPrompt(id, btn) {
+  const box = document.getElementById(id);
+  const text = box.innerText.replace(/^コピー\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    btn.textContent = '✓ コピー済'; btn.classList.add('copied');
+    setTimeout(() => { toast.classList.remove('show'); btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1600);
+  });
+}
+showSlide(0);
+</script>
+</body>
+</html>

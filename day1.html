@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1: Claudeを自分仕様にする</title>
+<style>
+  :root {
+    --primary: #6c47ff; --primary-dark: #4a2bd4;
+    --bg: #f6f5fa; --slide-bg: #ffffff;
+    --text: #1a1a2e; --muted: #6b7280; --accent: #ff6b35;
+    --code-bg: #1e1e2e; --code-text: #e0e0f0;
+    --border: #e5e5ea; --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 56px;
+    background: #fff; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; z-index: 10; gap: 16px;
+  }
+  .back-btn {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px;
+    color: var(--muted); text-decoration: none; transition: all 0.15s;
+  }
+  .back-btn:hover { background: #f0eefc; color: var(--primary); border-color: var(--primary); }
+  .topbar h1 { font-size: 14px; font-weight: 600; flex: 1; }
+  .topbar h1 .day-tag { color: var(--primary); margin-right: 8px; }
+  .stage {
+    position: absolute; top: 56px; bottom: 64px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .slide {
+    background: var(--slide-bg); width: 100%; max-width: 1200px;
+    height: 100%; max-height: 720px; border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 48px 64px; overflow: auto; display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .slide.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .slide h2 {
+    font-size: 32px; font-weight: 700; margin-bottom: 8px;
+    border-left: 6px solid var(--primary); padding-left: 16px;
+  }
+  .slide h3 { font-size: 20px; margin: 20px 0 12px; color: var(--primary-dark); }
+  .slide h4 { font-size: 16px; margin: 16px 0 8px; }
+  .slide p { margin-bottom: 12px; font-size: 15px; }
+  .slide ul, .slide ol { margin: 12px 0 12px 24px; }
+  .slide li { margin-bottom: 6px; font-size: 15px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .title-slide { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%; }
+  .title-slide.active { display: flex; }
+  .title-slide .day-num { font-size: 14px; color: var(--primary); letter-spacing: 0.2em; font-weight: 600; margin-bottom: 16px; }
+  .title-slide h1 {
+    font-size: 56px; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; color: transparent;
+    margin-bottom: 16px; border: none; padding: 0;
+  }
+  .title-slide .lead { font-size: 20px; color: var(--muted); margin-bottom: 32px; }
+  .title-slide .agenda { background: #f8f7fc; border-radius: 12px; padding: 24px 32px; text-align: left; max-width: 640px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .card { background: #f8f7fc; border-radius: 10px; padding: 18px; border-left: 4px solid var(--primary); }
+  .card h4 { margin-top: 0; color: var(--primary-dark); }
+  .card.warn { border-left-color: var(--accent); background: #fff4ee; }
+  .card.ok { border-left-color: var(--success); background: #f0fdf4; }
+  .steps { counter-reset: step; margin-top: 16px; }
+  .step {
+    counter-increment: step; background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px 14px 56px; margin-bottom: 10px;
+    position: relative; font-size: 15px;
+  }
+  .step::before {
+    content: counter(step); position: absolute; left: 14px; top: 12px;
+    width: 28px; height: 28px; line-height: 28px;
+    background: var(--primary); color: white; border-radius: 50%;
+    text-align: center; font-weight: 700; font-size: 13px;
+  }
+  .step b { color: var(--primary-dark); }
+  .prompt-box {
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 10px; padding: 16px 18px;
+    font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace;
+    font-size: 13px; margin: 12px 0; position: relative;
+    white-space: pre-wrap; line-height: 1.55;
+    max-height: 280px; overflow: auto;
+  }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(255,255,255,0.1); color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copy-btn.copied { background: var(--success); border-color: var(--success); }
+  .ui-hint {
+    display: inline-block; background: #fff4ee; color: #c2410c;
+    border: 1px dashed #fb923c; padding: 2px 8px; border-radius: 4px;
+    font-size: 13px; font-weight: 600; margin: 0 2px;
+  }
+  .key {
+    display: inline-block; background: #fff; border: 1px solid var(--border);
+    border-bottom-width: 2px; padding: 1px 6px; border-radius: 4px;
+    font-size: 12px; font-family: monospace;
+  }
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+    background: #fff; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; z-index: 10;
+  }
+  .nav-btn {
+    background: var(--primary); color: white; border: none; border-radius: 8px;
+    padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 600;
+  }
+  .nav-btn:hover { background: var(--primary-dark); }
+  .nav-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+  .slide-info { font-size: 13px; color: var(--muted); }
+  .progress { flex: 1; max-width: 320px; height: 6px; background: var(--border); border-radius: 3px; margin: 0 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--primary); transition: width 0.3s; }
+  .flow { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .flow-item { background: #fff; border: 2px solid var(--primary); border-radius: 10px; padding: 12px 18px; font-weight: 600; color: var(--primary-dark); text-align: center; }
+  .flow-arrow { color: var(--primary); font-size: 24px; font-weight: bold; }
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { padding-left: 28px; position: relative; margin-bottom: 8px; }
+  .checklist li::before { content: "☐"; position: absolute; left: 0; top: 0; color: var(--primary); font-size: 18px; font-weight: bold; }
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--success); color: white; padding: 8px 20px; border-radius: 20px;
+    font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.2s; z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+  .prof-tabs { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+  .prof-tab { background: #f8f7fc; border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--muted); transition: all 0.15s; font-weight: 600; }
+  .prof-tab:hover { background: #f0eefc; color: var(--primary); }
+  .prof-tab.active { background: var(--code-bg); color: white; border-color: var(--code-bg); }
+  .prompt-multi-box { background: var(--code-bg); color: var(--code-text); border-radius: 0 10px 10px 10px; padding: 16px 18px; font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace; font-size: 13px; margin-bottom: 12px; position: relative; line-height: 1.55; max-height: 280px; overflow: auto; }
+  .prompt-content { display: none; white-space: pre-wrap; }
+  .prompt-content.active { display: block; }
+  .prof-hint { display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="claude-chat-course.html" class="back-btn">← トップに戻る</a>
+  <h1><span class="day-tag">DAY 1</span>Claudeを自分仕様にする</h1>
+</div>
+<div class="stage" id="stage"></div>
+<div class="bottom-nav">
+  <button class="nav-btn" id="prevBtn">← 前へ</button>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span class="slide-info" id="slideInfo">1 / 1</span>
+  <button class="nav-btn" id="nextBtn">次へ →</button>
+</div>
+<div class="toast" id="toast">コピーしました</div>
+
+<script>
+const PROFESSIONS = [
+  {key:'sales', label:'営業'},
+  {key:'marketing', label:'マーケ・企画'},
+  {key:'hr', label:'人事'},
+  {key:'finance', label:'経理'},
+  {key:'admin', label:'総務・事務'},
+  {key:'manager', label:'管理職'},
+];
+
+const PROF_PROMPTS = {
+  project_instructions: {
+    sales: `あなたは私の業務アシスタントです。以下のルールを必ず守ってください。
+
+【私について】
+・職種：法人営業
+・関わっている主な業務：見込み顧客への提案、社内営業会議、案件管理、顧客対応メール
+・苦手なこと：数字を使った提案根拠の組み立て、長文メールの簡潔化
+
+【出力ルール】
+1. 結論を最初の1文で述べる
+2. その後に「理由」「具体例」「次のアクション」の順で書く
+3. 文体は丁寧体（です・ます調）
+4. 1回の返答は600字以内を目安にする
+5. 顧客の業界・規模が不明な時は必ず確認
+
+【行動ルール】
+・指示が曖昧な時は推測せず質問してから書き始める
+・複数の選択肢があるときは「比較表」で示す
+・100%確信が持てない情報には「※要確認」を末尾に付ける
+・社外向け文書を作る時は、必ず「社内チェックが必要な箇所」を最後に列挙`,
+    marketing: `あなたは私の業務アシスタントです。以下のルールを必ず守ってください。
+
+【私について】
+・職種：マーケティング・事業企画
+・関わっている主な業務：施策企画、効果分析、競合調査、社内提案資料、顧客インサイト整理
+・苦手なこと：データの統計的な解釈、エンジニアとの仕様すり合わせ
+
+【出力ルール】
+1. 結論を最初の1文で述べる
+2. 数字を提示する時は「比較対象」を必ずセットで示す
+3. 文体は丁寧体（です・ます調）、社内資料用は箇条書き多め
+4. 1回の返答は600字以内
+5. ファネル/ペルソナ等の用語は誰向けかを書き分けて使う
+
+【行動ルール】
+・前提条件が抜けていたら必ず質問
+・施策提案時は「KPI・コスト・期間・リスク」を必ず4点セットで提示
+・直感的な主張には根拠データの所在を明示
+・100%確信が持てない情報には「※要確認」`,
+    hr: `あなたは私の業務アシスタントです。以下のルールを必ず守ってください。
+
+【私について】
+・職種：人事
+・関わっている主な業務：採用、評価制度運用、研修企画、労務関連の問合せ対応、社内通知文作成
+・苦手なこと：法令・規程の正確な引用、定量的な分析
+
+【出力ルール】
+1. 結論を最初の1文で述べる
+2. 文体は丁寧体。社員全員向け文書はやわらかめ
+3. 1回の返答は600字以内
+4. 個人の評価や処遇に関する内容は固有名詞を伏せる
+5. 法令・規程に関する内容は「※社労士/法務確認」を必ず添える
+
+【行動ルール】
+・センシティブな内容（懲戒、評価、退職等）は表現を3パターン提示
+・採用関連は候補者・社内向けで言葉を使い分け
+・指示が曖昧な時は質問してから書き始める`,
+    finance: `あなたは私の業務アシスタントです。以下のルールを必ず守ってください。
+
+【私について】
+・職種：経理／財務
+・関わっている主な業務：月次決算、請求書処理、予算管理、社内問合せ対応、監査対応
+・苦手なこと：プレゼン的な見せ方、簡潔な要約
+
+【出力ルール】
+1. 数字は3桁カンマ区切り、単位を必ず明記
+2. 結論を最初の1文で述べる
+3. 文体は丁寧体（です・ます調）
+4. 1回の返答は600字以内
+5. 会計用語は社内非経理向けに使う時は必ず補足説明
+
+【行動ルール】
+・税務・会計判断に踏み込む時は「※顧問税理士に確認」を必ず添える
+・差異の指摘は「金額・割合・原因仮説」をセットで
+・指示が曖昧な時は質問してから書き始める
+・100%確信が持てない情報には「※要確認」`,
+    admin: `あなたは私の業務アシスタントです。以下のルールを必ず守ってください。
+
+【私について】
+・職種：総務／事務
+・関わっている主な業務：社内通知、備品管理、会議運営、慶弔対応、施設管理、各種申請処理
+・苦手なこと：説得力のある文章、関係者多数の調整文書
+
+【出力ルール】
+1. 結論（誰が何をいつまでに）を最初の1文で述べる
+2. 文体は丁寧体、社内通知は読みやすく短く
+3. 1回の返答は600字以内
+4. 締切・連絡先は太字 or 強調記号で目立たせる
+
+【行動ルール】
+・通知文は「目的・対象・期日・連絡先」の4点が必ず入っているかチェック
+・関係部署の影響範囲が不明な時は質問してから書き始める
+・100%確信が持てない情報には「※要確認」`,
+    manager: `あなたは私の業務アシスタントです。以下のルールを必ず守ってください。
+
+【私について】
+・職種：マネジメント／管理職
+・関わっている主な業務：チームマネジメント、1on1、評価面談、上層部への報告、戦略立案
+・苦手なこと：感情面の文章のトーン調整、長すぎる説明を簡潔にすること
+
+【出力ルール】
+1. 結論を最初の1文で述べる（特に意思決定が必要な内容）
+2. 「事実 / 解釈 / 提案」の3層を分けて書く
+3. 文体は丁寧体、部下向けは温かみを意識
+4. 1回の返答は600字以内
+5. 意思決定を求める時は「選択肢3つ＋それぞれの帰結」をセットで
+
+【行動ルール】
+・人事・評価に関する内容は固有名詞を伏せて相談
+・1on1のフィードバック案は「事実→影響→期待→質問」の構造で
+・100%確信が持てない情報には「※要確認」
+・指示が曖昧な時は質問してから書き始める`,
+  },
+  verify_choei: {
+    sales: `来週の月曜の朝礼で話す「先週の振り返り」を3分で話せる原稿にして。
+内容は「先週の主要な商談の進捗と今週の重点案件」について話したいです。
+ただし詳細は私が任せるので、まず私に何を質問すべきか整理して聞いてください。`,
+    marketing: `来週の月曜の朝礼で話す「先週の振り返り」を3分で話せる原稿にして。
+内容は「先週実施した施策のパフォーマンスと、今週の新しい打ち手」について話したいです。
+ただし詳細は私が任せるので、まず私に何を質問すべきか整理して聞いてください。`,
+    hr: `来週の月曜の朝礼で話す「先週の振り返り」を3分で話せる原稿にして。
+内容は「先週の採用活動と研修の進捗、今週の取り組み」について話したいです。
+ただし詳細は私が任せるので、まず私に何を質問すべきか整理して聞いてください。`,
+    finance: `来週の月曜の朝礼で話す「先週の振り返り」を3分で話せる原稿にして。
+内容は「月次決算の進捗と、今週の重要な締切・対応事項」について話したいです。
+ただし詳細は私が任せるので、まず私に何を質問すべきか整理して聞いてください。`,
+    admin: `来週の月曜の朝礼で話す「先週の振り返り」を3分で話せる原稿にして。
+内容は「先週対応した社内案件と、今週の主要な総務・事務予定」について話したいです。
+ただし詳細は私が任せるので、まず私に何を質問すべきか整理して聞いてください。`,
+    manager: `来週の月曜の朝礼で話す「先週の振り返り」を3分で話せる原稿にして。
+内容は「先週のチーム全体の動きと今週の方針・重点」について話したいです。
+ただし詳細は私が任せるので、まず私に何を質問すべきか整理して聞いてください。`,
+  },
+  memory_basic: {
+    sales: `これから挙げることを、今後すべての会話で使えるように記憶してください。
+
+1. 私の職種：法人営業
+2. 所属：（例：東京本社・法人事業部）
+3. 業界：（例：BtoB SaaS、製造業向け、金融機関向けなど）
+4. 主な相手：（例：従業員500名以上の企業の情シス部門）
+5. よく使う出力形式：表・箇条書き・1枚サマリー
+6. 避けてほしいこと：英語の専門用語をそのまま使うこと、長すぎる前置き
+7. 私の意思決定スタイル：データ重視・選択肢を3つ提示してほしい
+
+記憶したら、いま記憶した内容を私に確認のため箇条書きで読み上げてください。`,
+    marketing: `これから挙げることを、今後すべての会話で使えるように記憶してください。
+
+1. 私の職種：マーケティング・事業企画
+2. 所属：（例：マーケティング本部・デジタル推進部）
+3. 業界：（例：BtoC EC、消費財、SaaSなど）
+4. 主なターゲット：（例：30代女性・中小企業マーケ担当など）
+5. よく使う出力形式：施策提案フォーマット（KPI・コスト・期間・リスク）、競合比較表
+6. 避けてほしいこと：根拠のない断定、汎用的すぎる提案
+7. 私の意思決定スタイル：仮説→検証重視・ABテストの考え方を意識した提案
+
+記憶したら、いま記憶した内容を私に確認のため箇条書きで読み上げてください。`,
+    hr: `これから挙げることを、今後すべての会話で使えるように記憶してください。
+
+1. 私の職種：人事
+2. 所属：（例：人事部・採用グループ／労務グループ／HRBP）
+3. 業界：（例：IT、製造業、サービス業）
+4. 主な対象：（例：新卒・中途採用、全社員、特定部門の社員）
+5. よく使う出力形式：社内通知文、面接フィードバック、研修案内、Q&A集
+6. 避けてほしいこと：センシティブな話題で固有名詞を出すこと、法令の不正確な引用
+7. 私の意思決定スタイル：公平性と一貫性を重視、複数視点での提案
+
+記憶したら、いま記憶した内容を私に確認のため箇条書きで読み上げてください。`,
+    finance: `これから挙げることを、今後すべての会話で使えるように記憶してください。
+
+1. 私の職種：経理／財務
+2. 所属：（例：経理部・月次決算担当）
+3. 業界：（例：BtoB SaaS・製造業・小売）
+4. 主な業務：（例：月次決算、予算管理、請求書処理、監査対応）
+5. よく使う出力形式：差異分析表、勘定科目別サマリー、ToDoリスト
+6. 避けてほしいこと：会計用語の不正確な使用、税務判断への踏み込み
+7. 私の意思決定スタイル：数字の根拠重視、必ず社内ルール・規程に照らして提案
+
+記憶したら、いま記憶した内容を私に確認のため箇条書きで読み上げてください。`,
+    admin: `これから挙げることを、今後すべての会話で使えるように記憶してください。
+
+1. 私の職種：総務／事務
+2. 所属：（例：総務部・経営管理本部）
+3. 主な業務：（例：社内通知、備品管理、施設管理、各種申請、慶弔対応）
+4. 主な対応相手：（例：全社員、来訪者、業者、役員秘書）
+5. よく使う出力形式：通知文、申請フォーマット、対応マニュアル
+6. 避けてほしいこと：曖昧な期日・連絡先表現、対象範囲の不明瞭さ
+7. 私の意思決定スタイル：抜け漏れがないか、関係部署を必ず確認
+
+記憶したら、いま記憶した内容を私に確認のため箇条書きで読み上げてください。`,
+    manager: `これから挙げることを、今後すべての会話で使えるように記憶してください。
+
+1. 私の職種：マネジメント／管理職
+2. 所属：（例：◯◯部・部長／チームリーダー）
+3. チーム：（例：人数◯名、職種構成、平均年齢など）
+4. 主な対象：（例：部下、同僚マネージャー、上層部、関連部門）
+5. よく使う出力形式：1on1メモ、四半期報告、上層部向けサマリー、評価コメント案
+6. 避けてほしいこと：個人を特定できる形での評価言及、指示が曖昧な指示書
+7. 私の意思決定スタイル：選択肢3つ＋帰結提示型、データと感情の両方を重視
+
+記憶したら、いま記憶した内容を私に確認のため箇条書きで読み上げてください。`,
+  },
+};
+
+function escapeHTML(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function multiPrompt(key) {
+  const prompts = PROF_PROMPTS[key] || {};
+  let html = '<div class="prompt-multi"><div class="prof-tabs">';
+  PROFESSIONS.forEach((p, i) => {
+    html += `<button class="prof-tab${i===0?' active':''}" data-prof="${p.key}" onclick="switchProf(this)">${p.label}</button>`;
+  });
+  html += '</div><div class="prompt-multi-box"><button class="copy-btn" onclick="copyMulti(this)">コピー</button>';
+  PROFESSIONS.forEach((p, i) => {
+    const text = prompts[p.key] || '（このプロンプトは準備中）';
+    html += `<div class="prompt-content${i===0?' active':''}" data-prof="${p.key}">${escapeHTML(text)}</div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function switchProf(btn) {
+  const prof = btn.dataset.prof;
+  const tabs = btn.parentElement;
+  const multi = tabs.parentElement;
+  tabs.querySelectorAll('.prof-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  multi.querySelectorAll('.prompt-content').forEach(c => c.classList.toggle('active', c.dataset.prof === prof));
+}
+
+function copyMulti(btn) {
+  const box = btn.parentElement;
+  const active = box.querySelector('.prompt-content.active');
+  const text = active.innerText.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    btn.textContent = '✓ コピー済'; btn.classList.add('copied');
+    setTimeout(() => { toast.classList.remove('show'); btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1600);
+  });
+}
+
+const slides = [
+  { type: "title", html: `
+    <div class="day-num">DAY 1 / 5  •  2時間</div>
+    <h1>Claudeを自分仕様にする</h1>
+    <p class="lead">Projects・Memory で「毎回説明しなくていい相棒」を作る</p>
+    <div class="agenda">
+      <h3 style="margin-top:0">今日の流れ</h3>
+      <ol>
+        <li>アカウント準備とUI案内（15分）</li>
+        <li>Projectsの作成と初期設定（30分）</li>
+        <li>Project ナレッジに自分の文書を学習させる（35分）</li>
+        <li>Memoryで個人の前提を覚えさせる（25分）</li>
+        <li>宿題と振り返り（15分）</li>
+      </ol>
+    </div>
+  `},
+  { html: `
+    <h2>① アカウント準備</h2>
+    <p class="subtitle">所要 5分 / 既にログイン済みの方は次のスライドへ</p>
+    <div class="steps">
+      <div class="step">ブラウザで <b>claude.ai</b> を開く（ChromeかEdge推奨）</div>
+      <div class="step">画面中央の <span class="ui-hint">Sign up</span> または <span class="ui-hint">Sign in</span> をクリック</div>
+      <div class="step">Googleアカウント or メールアドレスでログイン</div>
+      <div class="step">画面右上に自分のアイコンが表示されればログイン完了</div>
+    </div>
+    <div class="card warn" style="margin-top:16px">
+      <h4>会社で使う場合の注意</h4>
+      <p>会社のメールアドレスでアカウントを作る前に、情シスに「Claude.ai を使ってよいか／どのプランか」を確認してください。Free / Pro / Team / Enterprise でデータ取り扱いが異なります。</p>
+    </div>
+  `},
+  { html: `
+    <h2>② 画面レイアウトを覚える</h2>
+    <p class="subtitle">どこに何があるかを把握すると迷わなくなる</p>
+    <div class="grid-2">
+      <div class="card">
+        <h4>左サイドバー</h4>
+        <ul>
+          <li><b>新しいチャット</b>（左上 +）</li>
+          <li><b>Chats</b>：過去の会話一覧</li>
+          <li><b>Projects</b>：今日の主役</li>
+          <li><b>Artifacts</b>：作った成果物</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>中央 / 右</h4>
+        <ul>
+          <li>真ん中：会話エリア</li>
+          <li>下部：入力ボックス（📎で添付）</li>
+          <li>入力欄左下：<b>モデル切替</b></li>
+          <li>入力欄右下：<b>送信ボタン</b></li>
+        </ul>
+      </div>
+    </div>
+    <div class="card ok" style="margin-top:16px">
+      <h4>モデルの使い分け（迷ったらSonnet）</h4>
+      <p><b>Opus</b>：難しい思考・長文 / <b>Sonnet</b>：日常業務の万能 / <b>Haiku</b>：とにかく速く</p>
+    </div>
+  `},
+  { html: `
+    <h2>③ Project とは何か</h2>
+    <p class="subtitle">「文脈付きの専用チャットルーム」</p>
+    <div class="flow">
+      <div class="flow-item">通常チャット<br><small>毎回ゼロから</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item" style="border-color:var(--accent);color:var(--accent)">Project<br><small>背景＋資料を共有</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">毎回<br>自分仕様の返答</div>
+    </div>
+    <h3>Projectで設定する2つのもの</h3>
+    <ol>
+      <li><b>System instructions（指示）</b>：自分の役割・出力ルール</li>
+      <li><b>Project knowledge（資料）</b>：参照させたいファイル</li>
+    </ol>
+    <p>→ 一度入れたら、そのProject内のすべてのチャットで自動的に使われる</p>
+  `},
+  { html: `
+    <h2>ハンズオン①：Project を作る</h2>
+    <p class="subtitle">所要 10分 / Lv1：自分専用の文体ルールを持たせる</p>
+    <div class="steps">
+      <div class="step">左サイドバーの <span class="ui-hint">Projects</span> をクリック</div>
+      <div class="step">右上の <span class="ui-hint">+ Create project</span> をクリック</div>
+      <div class="step">Name に「マイ業務アシスタント」と入力</div>
+      <div class="step">Description は空欄でOK → <span class="ui-hint">Create project</span></div>
+      <div class="step">作成後の画面、右側 <span class="ui-hint">Set custom instructions</span> をクリック → 次のスライドのプロンプトを貼り付け</div>
+    </div>
+  `},
+  { html: `
+    <h2>コピペ①：Project の指示文</h2>
+    <p class="subtitle">あなたの職種タブを選んで「コピー」→ Custom instructions 欄に貼り付け</p>
+    ${multiPrompt('project_instructions')}
+    <p style="font-size:13px;color:var(--muted)">★ 必要に応じて（例：◯◯）の部分を自分の状況に書き換えてから保存してください</p>
+  `},
+  { html: `
+    <h2>動作確認：いま設定した指示が効くか試す</h2>
+    <p class="subtitle">Project内で新規チャットを開いて、職種タブから自分のものを選んで送る</p>
+    ${multiPrompt('verify_choei')}
+    <h3>こうなれば成功 ✓</h3>
+    <ul class="checklist">
+      <li>いきなり原稿を書き始めず、質問してくる</li>
+      <li>質問が「結論→理由→具体例」の構造を意識している</li>
+      <li>丁寧体で返している</li>
+    </ul>
+    <div class="card warn">
+      <p>もし英語で返ってきたら「日本語で答えて」と一度送ればOK。Projectに「日本語で答えて」を追記すると以降不要になります。</p>
+    </div>
+  `},
+  { html: `
+    <h2>ハンズオン②：自分の文体を学習させる（Lv2）</h2>
+    <p class="subtitle">所要 25分 / 過去資料をProjectに食べさせる</p>
+    <div class="steps">
+      <div class="step">用意する：自分が過去に書いた <b>メール5通</b> ＋ <b>報告書 or 提案書 2本</b>。<br>個人情報や機密は黒塗り or 削除して保存</div>
+      <div class="step">Project画面の右側 <span class="ui-hint">Project knowledge</span> エリアの <span class="ui-hint">+ Add content</span> をクリック</div>
+      <div class="step">ファイルをドラッグ＆ドロップ（PDF / Word / テキストOK）</div>
+      <div class="step">Custom instructions に下の追記文を加える（次スライドのプロンプト）</div>
+      <div class="step">新規チャットで実際にメール下書きを依頼してみる</div>
+    </div>
+  `},
+  { html: `
+    <h2>コピペ②：文体学習の追記文</h2>
+    <p class="subtitle">既存のCustom instructionsの末尾に追記</p>
+    <div class="prompt-box" id="p3"><button class="copy-btn" onclick="copyPrompt('p3', this)">コピー</button>【私の文体について】
+Project knowledgeにアップロードされている過去の文書は、すべて私が実際に書いたものです。
+私が文章作成を依頼したときは、これらの文書から以下を学習し踏襲してください：
+
+・改行のタイミングと段落の長さ
+・よく使う言い回し・接続詞
+・敬語の硬さの度合い
+・箇条書きと文章のバランス
+・締めくくり方の癖
+
+ただし、過去文書に明らかな誤字脱字や論理破綻があった場合は、それは真似しないでください。</div>
+    <h3>試してみるプロンプト</h3>
+    <div class="prompt-box" id="p4"><button class="copy-btn" onclick="copyPrompt('p4', this)">コピー</button>来週水曜14:00からの定例会を、別件のため15:00開始に変更したいというメールを、参加者5名（社内）に送りたい。私の文体で下書きを作って。</div>
+  `},
+  { html: `
+    <h2>④ Memory を有効化する</h2>
+    <p class="subtitle">所要 15分 / 別のチャットでも記憶される仕組み</p>
+    <div class="steps">
+      <div class="step">左下の <b>自分のアイコン</b> をクリック → <span class="ui-hint">Settings</span></div>
+      <div class="step">左メニュー <span class="ui-hint">Profile</span> または <span class="ui-hint">Personalization</span> を選ぶ</div>
+      <div class="step"><span class="ui-hint">Memory</span> または <span class="ui-hint">Reference recent chats</span> をオン</div>
+      <div class="step">設定を閉じる → 通常のチャット（Project外でも可）を開く</div>
+    </div>
+    <div class="card warn">
+      <h4>Memory と Project の違い</h4>
+      <ul>
+        <li><b>Project</b>：そのProject内だけで使われる。仕事の文脈ごとに分けたい時。</li>
+        <li><b>Memory</b>：すべてのチャットで使われる。あなた個人の前提情報。</li>
+      </ul>
+    </div>
+  `},
+  { html: `
+    <h2>コピペ③：Memoryに覚えさせる基本情報</h2>
+    <p class="subtitle">普通のチャット（Project外）で職種タブから自分のものを選んで送る</p>
+    ${multiPrompt('memory_basic')}
+  `},
+  { html: `
+    <h2>本日の宿題（次回までに）</h2>
+    <p class="subtitle">明日のDay2を効果的にするために</p>
+    <ul class="checklist">
+      <li>Projectに、追加で <b>3〜5通の自分のメール</b> をアップロードする</li>
+      <li>Memoryに、思いついた「いつも説明していること」を1つ追加で覚えさせる</li>
+      <li>明日のために、要約してみたい <b>PDF（10ページ以上）</b> を1つ手元に用意</li>
+      <li>明日のために、文字起こし or 録音した <b>会議の議事録</b> を1つ用意（30分以上のもの）</li>
+    </ul>
+    <div class="card ok">
+      <h4>今日の達成</h4>
+      <p>・自分仕様のProjectを作成<br>・自分の文体を学習させた<br>・Memoryで個人情報を記憶させた</p>
+    </div>
+    <p style="text-align:center; margin-top:24px;"><a href="day2.html" style="background:var(--primary); color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-weight:700;">Day 2 へ進む →</a></p>
+  `},
+];
+
+let currentSlide = 0;
+const stage = document.getElementById('stage');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const slideInfo = document.getElementById('slideInfo');
+const progressBar = document.getElementById('progressBar');
+
+slides.forEach((slide, i) => {
+  const div = document.createElement('div');
+  div.className = 'slide' + (slide.type === 'title' ? ' title-slide' : '');
+  div.innerHTML = slide.html;
+  stage.appendChild(div);
+});
+
+function showSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  currentSlide = i;
+  document.querySelectorAll('.slide').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  slideInfo.textContent = `${i + 1} / ${slides.length}`;
+  progressBar.style.width = `${((i + 1) / slides.length) * 100}%`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === slides.length - 1;
+}
+prevBtn.onclick = () => showSlide(currentSlide - 1);
+nextBtn.onclick = () => showSlide(currentSlide + 1);
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { showSlide(currentSlide + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
+});
+function copyPrompt(id, btn) {
+  const box = document.getElementById(id);
+  const text = box.innerText.replace(/^コピー\s*/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    btn.textContent = '✓ コピー済'; btn.classList.add('copied');
+    setTimeout(() => { toast.classList.remove('show'); btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 1600);
+  });
+}
+showSlide(0);
+</script>
+</body>
+</html>
