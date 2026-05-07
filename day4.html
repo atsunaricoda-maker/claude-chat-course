@@ -212,6 +212,66 @@ function copyMulti(btn) {
 
 const slides = [
   { html: `
+    <h2>Connector とは何か</h2>
+    <p class="subtitle">「外部ツールとClaudeを直接つなぐ橋」</p>
+    <h3>例えるなら...</h3>
+    <div class="flow">
+      <div class="flow-item">単独のClaude<br><small>あなたが手動でコピペ</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item" style="border-color:var(--accent);color:var(--accent)">+ Connector<br><small>Claudeが直接アクセス</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">アプリ往復ゼロ<br><small>横断検索・統合分析</small></div>
+    </div>
+    <h3>主なConnectorカテゴリ</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>📧 メール・カレンダー</h4>
+        <ul>
+          <li><b>Gmail</b> / Outlook — 受信箱要約・返信下書き</li>
+          <li><b>Google Calendar</b> / Outlook — 予定整理・会議準備</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>📁 ドキュメント・ストレージ</h4>
+        <ul>
+          <li><b>Google Drive</b> — Docs/Sheets/Slides横断検索</li>
+          <li><b>OneDrive</b> / Dropbox — ファイル横断分析</li>
+          <li><b>Notion</b> — Wiki・社内ドキュメント連携</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>💬 チームコミュニケーション</h4>
+        <ul>
+          <li><b>Slack</b> — チャネル要約・履歴検索</li>
+          <li><b>Microsoft Teams</b> — メッセージ・通話履歴</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🛠 業務システム</h4>
+        <ul>
+          <li><b>Linear</b> / Asana / Trello — タスク管理</li>
+          <li><b>Salesforce</b> / HubSpot — CRM連携</li>
+          <li><b>GitHub</b> / GitLab — コード・PR分析</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Connector導入の3つのベネフィット</h3>
+    <div class="grid-3">
+      <div class="card ok">
+        <h4>① アプリ往復ゼロ</h4>
+        <p>タブを開きまくる作業が消える</p>
+      </div>
+      <div class="card ok">
+        <h4>② 横断的な情報統合</h4>
+        <p>Gmail × Calendar × Drive を一括で参照</p>
+      </div>
+      <div class="card ok">
+        <h4>③ リアルタイム情報</h4>
+        <p>古いコピペでなく最新を直接参照</p>
+      </div>
+    </div>
+  `},
+  { html: `
     <h2>Connectors の場所</h2>
     <p class="subtitle">どこから接続するか</p>
     <div class="steps">

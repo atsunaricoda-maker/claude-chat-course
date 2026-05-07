@@ -357,16 +357,70 @@ function copyMulti(btn) {
 
 const slides = [
   { html: `
-    <h2>Skills とは</h2>
-    <p class="subtitle">「定型作業の品質を一定にする道具箱」</p>
+    <h2>Skill とは何か</h2>
+    <p class="subtitle">「Claudeに専門のプロ知識を装着させるパッケージ」</p>
+    <h3>例えるなら...</h3>
     <div class="flow">
-      <div class="flow-item">通常の依頼<br><small>毎回品質が揺れる</small></div>
+      <div class="flow-item">白紙のClaude<br><small>毎回ゼロから指示</small></div>
       <span class="flow-arrow">→</span>
-      <div class="flow-item" style="border-color:var(--accent);color:var(--accent)">Skill呼び出し<br><small>/xlsx /pptx 等</small></div>
+      <div class="flow-item" style="border-color:var(--accent);color:var(--accent)">+ Skill<br><small>「◯◯職人」を装着</small></div>
       <span class="flow-arrow">→</span>
-      <div class="flow-item">毎回<br>プロ品質</div>
+      <div class="flow-item">毎回プロ品質<br><small>属人化ゼロ</small></div>
     </div>
-    <h3>呼び出し方</h3>
+    <h3>主なSkillカテゴリ</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>📄 文書作成系</h4>
+        <ul>
+          <li><b>/xlsx</b> — Excel生成（集計・グラフ・書式）</li>
+          <li><b>/pptx</b> — PowerPoint自動生成</li>
+          <li><b>/docx</b> — Word文書作成</li>
+          <li><b>/pdf</b> — PDF読込・処理</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>🎨 デザイン系</h4>
+        <ul>
+          <li><b>/brand-guidelines</b> — ブランド色・フォント準拠</li>
+          <li><b>/canvas-design</b> — ポスター・告知デザイン</li>
+          <li><b>/theme-factory</b> — 配色テーマ生成</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>💬 コミュニケーション系</h4>
+        <ul>
+          <li><b>/internal-comms</b> — 社内文書フォーマット</li>
+          <li><b>/doc-coauthoring</b> — 共著ワークフロー</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>⚙ 業務効率化系</h4>
+        <ul>
+          <li><b>/schedule</b> — 定期実行タスク</li>
+          <li><b>/loop</b> — 繰り返し実行</li>
+          <li><b>/skill-creator</b> — 独自Skill作成</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Skill導入の3つのベネフィット</h3>
+    <div class="grid-3">
+      <div class="card ok">
+        <h4>① 品質の安定</h4>
+        <p>誰が呼んでも同じプロ品質で出力される</p>
+      </div>
+      <div class="card ok">
+        <h4>② 時間短縮</h4>
+        <p>長いプロンプトでなく / で1コマンド</p>
+      </div>
+      <div class="card ok">
+        <h4>③ 学習コスト不要</h4>
+        <p>Excel関数・PPTデザインを覚えなくていい</p>
+      </div>
+    </div>
+  `},
+  { html: `
+    <h2>Skill の呼び出し方</h2>
+    <p class="subtitle">/（半角スラッシュ）を打つだけ</p>
     <div class="steps">
       <div class="step">入力欄に <span class="ui-hint">/</span>（半角スラッシュ）を打つ</div>
       <div class="step">候補リストが出るので、使いたいSkillを選ぶ（例：/xlsx）</div>
