@@ -419,6 +419,41 @@ const slides = [
     </div>
   `},
   { html: `
+    <h2>Skill の設定方法（事前準備）</h2>
+    <p class="subtitle">/ で呼び出す前に、まず有効化が必要です</p>
+    <h3>有効化の手順</h3>
+    <div class="steps">
+      <div class="step">画面左下の <b>自分のアイコン</b> をクリック → <span class="ui-hint">Settings</span></div>
+      <div class="step">左メニューから <span class="ui-hint">Capabilities</span> または <span class="ui-hint">Tools</span> を選ぶ（プランや時期で名称が変わる）</div>
+      <div class="step"><b>File creation</b>（または <b>Skills</b>）のセクションを探す</div>
+      <div class="step">使いたいものを <span class="ui-hint">ON</span> にする（例：Excel生成 / PowerPoint生成 / PDF処理）</div>
+      <div class="step">設定を閉じる → 入力欄で <span class="ui-hint">/</span> を打ち、候補リストに出れば成功</div>
+    </div>
+    <h3>よくあるつまずき</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Q. /xlsx が候補に出ない</h4>
+        <p>File creation が OFF になっている可能性。Settings → Capabilities / Tools を再確認してください。</p>
+      </div>
+      <div class="card">
+        <h4>Q. プランで違いはある？</h4>
+        <p>Free / Pro / Team / Enterprise で利用可能なSkillが異なります。会社契約の場合は情シスに確認。</p>
+      </div>
+      <div class="card">
+        <h4>Q. 一度ONにしたら毎回有効？</h4>
+        <p>はい。アカウント単位で記憶されます。新しいデバイスでログインしても引き継がれます。</p>
+      </div>
+      <div class="card">
+        <h4>Q. OFFに戻したい</h4>
+        <p>同じ設定画面で OFF にすればOK。チャット履歴は残ります。</p>
+      </div>
+    </div>
+    <div class="card warn">
+      <h4>会社のClaudeを使う場合の注意</h4>
+      <p>Skillの一部は <b>管理者（情シス・ワークスペース管理者）</b> でしか有効化できないことがあります。設定画面で項目が見えない・グレーアウトしている場合は管理者に「○○のSkillを使いたい」と相談してください。</p>
+    </div>
+  `},
+  { html: `
     <h2>Skill の呼び出し方</h2>
     <p class="subtitle">/（半角スラッシュ）を打つだけ</p>
     <div class="steps">
