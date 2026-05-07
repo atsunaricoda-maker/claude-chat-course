@@ -131,7 +131,11 @@
   .flow-arrow { color: var(--primary); font-size: 24px; font-weight: bold; }
   .checklist { list-style: none; margin-left: 0; }
   .checklist li { padding-left: 28px; position: relative; margin-bottom: 8px; }
-  .checklist li::before { content: "☐"; position: absolute; left: 0; top: 0; color: var(--primary); font-size: 18px; font-weight: bold; }
+  .checklist li::before { content: "☐"; position: absolute; left: 0; top: 0; color: var(--primary); font-size: 18px; font-weight: bold; transition: transform 0.1s; }
+  .checklist li { cursor: pointer; user-select: none; transition: opacity 0.15s; }
+  .checklist li:hover::before { transform: scale(1.15); }
+  .checklist li.checked { color: var(--muted); text-decoration: line-through; opacity: 0.65; }
+  .checklist li.checked::before { content: "☑"; color: var(--success); }
   .toast {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
     background: var(--success); color: white; padding: 8px 20px; border-radius: 20px;
@@ -630,6 +634,23 @@ function copyPrompt(id, btn) {
   });
 }
 showSlide(0);
+
+function initChecklists() {
+  const dayKey = (location.pathname.split('/').pop() || 'day').replace('.html', '') || 'day';
+  const allSlides = Array.from(document.querySelectorAll('.slide'));
+  document.querySelectorAll('.checklist li').forEach((li) => {
+    const slideEl = li.closest('.slide');
+    const slideIdx = allSlides.indexOf(slideEl);
+    const itemIdx = Array.from(li.parentElement.children).indexOf(li);
+    const key = 'chk-' + dayKey + '-s' + slideIdx + '-i' + itemIdx;
+    try { if (localStorage.getItem(key) === '1') li.classList.add('checked'); } catch (e) {}
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      try { localStorage.setItem(key, li.classList.contains('checked') ? '1' : '0'); } catch (e) {}
+    });
+  });
+}
+initChecklists();
 </script>
 </body>
 </html>
