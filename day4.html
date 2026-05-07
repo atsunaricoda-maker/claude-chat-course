@@ -272,22 +272,42 @@ const slides = [
     </div>
   `},
   { html: `
-    <h2>Connectors の場所</h2>
-    <p class="subtitle">どこから接続するか</p>
+    <h2>Connector の設定方法</h2>
+    <p class="subtitle">接続の場所・手順・トラブルシュート</p>
+    <h3>接続の手順</h3>
     <div class="steps">
       <div class="step">画面左下 <b>自分のアイコン</b> → <span class="ui-hint">Settings</span></div>
       <div class="step">左メニュー <span class="ui-hint">Connectors</span> をクリック</div>
       <div class="step">利用可能なサービス一覧から接続したいものを選択</div>
-      <div class="step"><span class="ui-hint">Connect</span> をクリックすると、そのサービスのログイン画面に飛ぶ</div>
-      <div class="step">権限を確認して許可（最小権限を選ぶのが基本）</div>
+      <div class="step"><span class="ui-hint">Connect</span> をクリック → 各サービスのログイン画面に遷移</div>
+      <div class="step">権限を確認して許可（<b>読み取りのみ</b>が最も安全）</div>
     </div>
     <div class="card warn">
       <h4>接続前に必ず確認</h4>
       <ul>
-        <li>会社の情シスポリシーでこのコネクタが許可されているか</li>
+        <li>会社の情シスポリシーでこのConnectorが許可されているか</li>
         <li>個人アカウントと業務アカウントを混同していないか</li>
-        <li>付与する権限の範囲（読み取りのみか、書き込みもか）</li>
+        <li>付与する権限の範囲（読み取りのみ／書き込みも）</li>
       </ul>
+    </div>
+    <h3>よくあるつまずき</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Q. Connect ボタンがグレーアウト</h4>
+        <p>ワークスペース管理者によって制限されている可能性。情シスに「◯◯Connectorを使いたい」と相談してください。</p>
+      </div>
+      <div class="card">
+        <h4>Q. 接続を解除したい</h4>
+        <p>Settings → Connectors → 該当サービス → <span class="ui-hint">Disconnect</span>。即時に全権限が外れます。</p>
+      </div>
+      <div class="card">
+        <h4>Q. 個人と会社のアカウントを使い分けたい</h4>
+        <p>Connector接続はClaudeアカウント単位。業務用と個人用の <b>Claudeアカウント自体を分ける</b> 運用が確実です。</p>
+      </div>
+      <div class="card">
+        <h4>Q. データはClaudeに保存される？</h4>
+        <p>会話のコンテキストとして使用されるのみで、原則として永続学習には使われません。詳細・プランごとの違いは公式ポリシーをご確認ください。</p>
+      </div>
     </div>
   `},
   { html: `
