@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「生成AI実務活用 5日間ハンズオン研修」導入提案書</title>
+<style>
+  :root {
+    --primary: #6c47ff;
+    --primary-dark: #4a2bd4;
+    --bg: #f6f5fa;
+    --paper: #fff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --accent: #ff6b35;
+    --border: #e5e5ea;
+    --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "ＭＳ 明朝", serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.85;
+  }
+  .topbar {
+    position: sticky; top: 0;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 10;
+  }
+  .topbar a {
+    color: var(--muted); text-decoration: none; font-size: 13px;
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+    transition: all 0.15s;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  .topbar a:hover { color: var(--primary); border-color: var(--primary); }
+  .print-btn { background: var(--primary); color: white !important; border-color: var(--primary) !important; }
+  .container {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 56px 56px 80px;
+    background: var(--paper);
+    box-shadow: 0 0 24px rgba(0,0,0,0.04);
+  }
+  .doc-header {
+    text-align: center;
+    border-bottom: 3px double var(--primary);
+    padding-bottom: 36px;
+    margin-bottom: 40px;
+  }
+  .doc-header .doc-meta {
+    font-size: 14px; color: var(--muted);
+    margin-bottom: 16px; letter-spacing: 0.4em;
+    font-weight: 600;
+  }
+  .doc-header h1 {
+    font-size: 28px; font-weight: 700;
+    line-height: 1.5; margin-bottom: 16px;
+  }
+  .doc-header .subtitle { font-size: 15px; color: var(--muted); }
+  .doc-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 32px;
+    background: var(--bg);
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 32px;
+    font-size: 14px;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  .doc-info dl { display: flex; gap: 12px; align-items: baseline; }
+  .doc-info dt { font-weight: 600; color: var(--primary-dark); min-width: 80px; flex-shrink: 0; }
+  .doc-info dd { color: var(--text); }
+
+  .toc {
+    background: var(--bg);
+    padding: 24px 32px;
+    border-radius: 8px;
+    margin-bottom: 48px;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  .toc h2 { font-size: 14px; color: var(--primary-dark); margin-bottom: 14px; border: none; padding: 0; }
+  .toc ol { margin-left: 24px; }
+  .toc li { font-size: 13px; padding: 3px 0; }
+  .toc a { color: var(--text); text-decoration: none; }
+  .toc a:hover { color: var(--primary); text-decoration: underline; }
+
+  section { margin-bottom: 44px; scroll-margin-top: 80px; }
+  h2 {
+    font-size: 20px;
+    color: var(--primary-dark);
+    border-left: 5px solid var(--primary);
+    padding-left: 14px;
+    margin-bottom: 18px;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  h3 {
+    font-size: 16px; margin: 22px 0 12px;
+    color: var(--primary-dark);
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  h4 { font-size: 14px; margin: 14px 0 6px; color: var(--text); font-family: -apple-system, sans-serif; }
+  p { font-size: 14px; margin-bottom: 12px; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 14px 0;
+    font-size: 13px;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  th, td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; vertical-align: top; }
+  th { background: var(--bg); color: var(--primary-dark); font-weight: 600; }
+  table.compare th, table.compare td { text-align: left; }
+  ul, ol { margin: 8px 0 12px 28px; }
+  li { font-size: 14px; padding: 2px 0; }
+
+  .highlight-box {
+    background: linear-gradient(135deg, #f8f7fc 0%, #fff4ee 100%);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px; border-radius: 6px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .roi-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin: 20px 0;
+  }
+  .roi-card {
+    background: var(--bg); padding: 18px 22px;
+    border-radius: 8px;
+    border-left: 4px solid var(--success);
+  }
+  .roi-card.invest { border-left-color: var(--accent); }
+  .roi-card h4 { color: var(--primary-dark); margin-bottom: 8px; font-size: 13px; }
+  .roi-card .number { font-size: 22px; font-weight: 700; color: var(--primary-dark); margin: 4px 0; font-family: -apple-system, sans-serif; }
+  .roi-card .label { font-size: 12px; color: var(--muted); }
+
+  .conclusion {
+    background: linear-gradient(135deg, #f0eefc 0%, #ffe6d6 100%);
+    padding: 28px 32px; border-radius: 12px;
+    margin: 24px 0;
+    font-size: 14px; line-height: 1.9;
+  }
+
+  .footer {
+    margin-top: 64px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+
+  @media print {
+    .topbar { display: none; }
+    .container { box-shadow: none; max-width: 100%; padding: 0; }
+    body { background: white; }
+    section { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+  @page { size: A4; margin: 18mm; }
+
+  @media (max-width: 700px) {
+    .container { padding: 24px; }
+    .doc-info { grid-template-columns: 1fr; }
+    .roi-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="claude-chat-course.html">← トップに戻る</a>
+  <a href="javascript:window.print()" class="print-btn">🖨 印刷 / PDF保存</a>
+</div>
+
+<div class="container">
+
+  <div class="doc-header">
+    <div class="doc-meta">提 案 書</div>
+    <h1>「生成AI実務活用 5日間ハンズオン研修」<br>導入提案</h1>
+    <div class="subtitle">Claude Chat を活用した職員向け業務効率化プログラム</div>
+  </div>
+
+  <div class="doc-info">
+    <dl><dt>提案者</dt><dd>（提案者名・組織名を記入）</dd></dl>
+    <dl><dt>提出日</dt><dd>2026年5月</dd></dl>
+    <dl><dt>提出先</dt><dd>（提出先・部署を記入）</dd></dl>
+    <dl><dt>教材URL</dt><dd>https://atsunaricoda-maker.github.io/claude-chat-course/</dd></dl>
+  </div>
+
+  <div class="toc">
+    <h2>目 次</h2>
+    <ol>
+      <li><a href="#sec1">提案概要</a></li>
+      <li><a href="#sec2">背景・課題認識</a></li>
+      <li><a href="#sec3">本研修の特徴</a></li>
+      <li><a href="#sec4">カリキュラム詳細</a></li>
+      <li><a href="#sec5">期待される成果（受講者個人）</a></li>
+      <li><a href="#sec6">期待される成果（組織・社会）</a></li>
+      <li><a href="#sec7">投資対効果（ROI試算）</a></li>
+      <li><a href="#sec8">実施体制・必要要件</a></li>
+      <li><a href="#sec9">リスクと対策</a></li>
+      <li><a href="#sec10">実施スケジュール提案</a></li>
+      <li><a href="#sec11">結語</a></li>
+    </ol>
+  </div>
+
+  <section id="sec1">
+    <h2>1. 提案概要</h2>
+    <p>
+      本研修は、生成AI「Claude Chat」を職員の日常業務に組み込むための、ハンズオン中心の体系的研修プログラムです。
+      従来の「単発の体験会」「講義中心の研修」では業務定着に至らないという課題を、5日間の段階的設計と職種別教材で解決します。
+    </p>
+    <table>
+      <tr><th>項目</th><th>内容</th></tr>
+      <tr><td>名称</td><td>Claude Chat 5日間ハンズオン研修</td></tr>
+      <tr><td>対象</td><td>職種を問わない全職員（非エンジニア中心）</td></tr>
+      <tr><td>期間</td><td>全5日間 / 各2時間 / 合計10時間</td></tr>
+      <tr><td>形式</td><td>ハンズオン演習主体（オンライン or 対面）</td></tr>
+      <tr><td>想定受講者数</td><td>1回あたり10〜30名</td></tr>
+      <tr><td>教材</td><td>Web上で全公開済み・常時アクセス可能</td></tr>
+      <tr><td>研修後フォロー</td><td>30日定着ロードマップ付き</td></tr>
+    </table>
+  </section>
+
+  <section id="sec2">
+    <h2>2. 背景・課題認識</h2>
+    <h3>社会的背景</h3>
+    <ul>
+      <li>2026年時点で生成AI（Claude等）の業務活用は世界的に標準化</li>
+      <li>OECD加盟国の行政機関で生成AI活用率は前年比で大幅に増加</li>
+      <li>日本の行政機関でも導入検討が急増しているが、現場活用には大きなギャップ</li>
+    </ul>
+
+    <h3>現場が抱える3つの壁</h3>
+    <ol>
+      <li><b>「研修受けたけど結局使えていない」</b>— 一般的な生成AI研修受講者の半数以上が業務に活かせていないという調査結果</li>
+      <li><b>ITリテラシーの個人差</b>— ITに不慣れな職員ほどハードルが高く、組織全体での推進が困難</li>
+      <li><b>職種別ニーズへの対応不足</b>— 部署・職種ごとに使い方が異なるが、画一的な研修になりがち</li>
+    </ol>
+
+    <div class="highlight-box">
+      <b>本提案の意義：</b> ハンズオン中心の設計と職種別教材により、「使える状態」まで到達した受講者を確実に生み出します。
+      30日のフォローロードマップで業務定着を保証し、研修投資が確実に成果につながる構造を採用しています。
+    </div>
+  </section>
+
+  <section id="sec3">
+    <h2>3. 本研修の特徴</h2>
+    <table class="compare">
+      <tr><th>観点</th><th>一般的な研修</th><th>本研修</th></tr>
+      <tr><td>形式</td><td>講義中心</td><td>ハンズオン90%</td></tr>
+      <tr><td>プロンプト例</td><td>一律のサンプル</td><td>営業・マーケ・人事・経理・総務・管理職の6職種別</td></tr>
+      <tr><td>期間構成</td><td>1日完結</td><td>5日間で段階的に習得</td></tr>
+      <tr><td>研修後</td><td>フォローなし</td><td>30日ロードマップ付き</td></tr>
+      <tr><td>教材形態</td><td>紙資料</td><td>Web常時アクセス可能・スマホ対応</td></tr>
+      <tr><td>再現性</td><td>講師の力量に依存</td><td>コピペ可能なプロンプト集で誰でも再実施可能</td></tr>
+      <tr><td>UI言語対応</td><td>英語表記のみ</td><td>英語UIラベルに日本語併記</td></tr>
+    </table>
+  </section>
+
+  <section id="sec4">
+    <h2>4. カリキュラム詳細</h2>
+
+    <h3>Day 1: Claudeを自分仕様にする</h3>
+    <p>Project機能・Memory機能を使い、Claudeに自分の業務文脈・文体を学習させ、「毎回説明しなくていい相棒」を構築します。</p>
+    <ul>
+      <li>アカウント・UI案内（15分）</li>
+      <li>Project作成と指示文設定（30分）</li>
+      <li>過去の文書から文体を学習（35分）</li>
+      <li>Memoryで個人情報を記憶（25分）</li>
+      <li>振り返り・宿題（15分）</li>
+    </ul>
+
+    <h3>Day 2: 「読む」「まとめる」を委任する</h3>
+    <p>PDF・議事録・録音を Claudeに処理させ、資料処理時間を1/10に短縮します。</p>
+    <ul>
+      <li>PDFを「自分の視点で」要約</li>
+      <li>議事録→ToDoリスト・共有メール変換</li>
+      <li>Artifactsで1枚A4サマリー作成</li>
+      <li>会話で資料を編集</li>
+    </ul>
+
+    <h3>Day 3: データとスライドを自動化する</h3>
+    <p>Skill機能（/xlsx, /pptx）でExcel職人・PPT職人を卒業します。</p>
+    <ul>
+      <li>Skillの概念・カタログ・ベネフィット理解</li>
+      <li>Skillの設定方法・FAQ</li>
+      <li>/xlsx で月次レポート自動生成</li>
+      <li>/pptx で15分プレゼン自動作成</li>
+      <li>ブランド準拠デザイン</li>
+    </ul>
+
+    <h3>Day 4: 周辺ツールと繋いで「アプリ往復」を消す</h3>
+    <p>Connector機能で Gmail / Calendar / Drive を統合し、横断的な情報処理を実現します。</p>
+    <ul>
+      <li>Connectorの概念・カタログ・ベネフィット理解</li>
+      <li>接続方法・FAQ・プライバシー運用</li>
+      <li>Gmail要約・返信ドラフト</li>
+      <li>Calendar週次プランニング</li>
+      <li>Drive横断検索</li>
+      <li>3ツール統合ブリーフィング</li>
+    </ul>
+
+    <h3>Day 5: 自分の業務に組み込む</h3>
+    <p>学んだ機能を自分の定常業務に組み込む設計を、各受講者が自ら作成します。</p>
+    <ul>
+      <li>業務棚卸しワーク（A〜D分類）</li>
+      <li>1業務をフルClaude化する詳細設計</li>
+      <li>同僚向け3分デモシナリオ作成</li>
+      <li>30日定着ロードマップ作成</li>
+    </ul>
+  </section>
+
+  <section id="sec5">
+    <h2>5. 期待される成果（受講者個人）</h2>
+
+    <h3>定量的な業務時間削減（試算）</h3>
+    <table>
+      <tr><th>業務</th><th>現状</th><th>Claude化後</th><th>削減時間/月</th></tr>
+      <tr><td>議事録作成</td><td>90分 × 4回 = 360分</td><td>10分 × 4回 = 40分</td><td>320分</td></tr>
+      <tr><td>月次レポート作成</td><td>240分 × 1回</td><td>60分 × 1回</td><td>180分</td></tr>
+      <tr><td>メール返信</td><td>30分 × 20日 = 600分</td><td>10分 × 20日 = 200分</td><td>400分</td></tr>
+      <tr><td>提案書作成</td><td>180分 × 4本 = 720分</td><td>60分 × 4本 = 240分</td><td>480分</td></tr>
+      <tr><td>議事録共有メール</td><td>30分 × 4回</td><td>5分 × 4回</td><td>100分</td></tr>
+      <tr><th>合計（月）</th><th>約 33時間</th><th>約 12時間</th><th>約 21時間</th></tr>
+    </table>
+
+    <h3>定性的な成果</h3>
+    <ul>
+      <li><b>文書品質の標準化</b>—ベテランと若手の差が縮まる、属人化の解消</li>
+      <li><b>「白紙が怖い」状態からの脱却</b>—初稿の負担が減り、創造的業務に時間を使える</li>
+      <li><b>自走力の獲得</b>—自分でカスタマイズできる、ツール変化に対応できる</li>
+      <li><b>社内講師化</b>—同僚に説明・伝授でき、研修が組織内に伝播する</li>
+    </ul>
+  </section>
+
+  <section id="sec6">
+    <h2>6. 期待される成果（組織・社会）</h2>
+
+    <h3>組織への波及効果</h3>
+    <ul>
+      <li>1人あたり月21時間 × 受講者数 = 大きな時間創出</li>
+      <li>創出された時間を市民サービス向上・企画立案・新規事業に転用可能</li>
+      <li>部署横断のベストプラクティス共有による組織学習</li>
+      <li>採用・新人育成期間の短縮</li>
+      <li>残業時間削減・ワークライフバランス改善</li>
+    </ul>
+
+    <h3>社会的便益</h3>
+    <ul>
+      <li>職員の働き方改革推進</li>
+      <li>公務効率化による財政負担の軽減</li>
+      <li>生成AI活用の先進事例として他自治体・他組織への波及</li>
+      <li>DX推進指標（KPI）への直接的貢献</li>
+      <li>市民への迅速な対応・サービス品質向上</li>
+    </ul>
+  </section>
+
+  <section id="sec7">
+    <h2>7. 投資対効果（ROI試算）</h2>
+
+    <p>受講者30名規模の場合の試算です。実際の規模・条件により調整可能です。</p>
+
+    <div class="roi-grid">
+      <div class="roi-card invest">
+        <h4>投資（年間）</h4>
+        <div class="number">約 100万円</div>
+        <div class="label">講師費 + ツール費 + 機会費用<br>（教材費は¥0：全Web公開済み）</div>
+      </div>
+      <div class="roi-card">
+        <h4>創出される付加価値（年間）</h4>
+        <div class="number">約 1,440万円</div>
+        <div class="label">受講者1人あたり 年間192時間 × 時給2,500円換算<br>× 30名 = 1,440万円</div>
+      </div>
+    </div>
+
+    <h3>計算根拠</h3>
+    <ul>
+      <li>1人あたりの月間時間削減: 21時間（前項試算）</li>
+      <li>年間時間削減: 21時間 × 12ヶ月 = <b>252時間/人/年</b>（保守的に192時間で計算）</li>
+      <li>時給換算: 年収500万円相当として時給2,500円</li>
+      <li>1人あたり付加価値: 192時間 × 2,500円 = <b>480,000円/年</b></li>
+      <li>30名: 480,000円 × 30 = <b>14,400,000円/年</b></li>
+    </ul>
+
+    <div class="highlight-box">
+      <b>回収期間：約1ヶ月</b>。投資100万円に対し、月間120万円の付加価値創出により、初月でほぼ回収完了する高ROI施策です。
+    </div>
+  </section>
+
+  <section id="sec8">
+    <h2>8. 実施体制・必要要件</h2>
+
+    <h3>必要なもの</h3>
+    <ul>
+      <li>受講者用PC（インターネット接続）</li>
+      <li>Claude.ai アカウント（無料プラン〜Enterprise）</li>
+      <li>集合形式の場合：会議室・プロジェクター</li>
+      <li>オンライン形式の場合：ビデオ会議ツール（Zoom/Teams等）</li>
+    </ul>
+
+    <h3>事前準備（推奨）</h3>
+    <ul>
+      <li>受講者の業務カテゴリ事前ヒアリング（職種別プロンプトの選定に活用）</li>
+      <li>機密情報取扱いポリシーのすり合わせ</li>
+      <li>情シス部門との接続確認（Connector利用時）</li>
+      <li>実業務の素材（メール・議事録・データ等）の事前準備依頼</li>
+    </ul>
+
+    <h3>講師</h3>
+    <ul>
+      <li>本カリキュラム作成者または認定講師</li>
+      <li>非エンジニア研修の経験者</li>
+      <li>受講者の質問にリアルタイムで回答できる体制</li>
+    </ul>
+  </section>
+
+  <section id="sec9">
+    <h2>9. リスクと対策</h2>
+    <table>
+      <tr><th>リスク</th><th>対策</th></tr>
+      <tr>
+        <td>機密情報の取扱い</td>
+        <td>個人情報・機密情報を含む資料は事前ガイドラインで明確化。研修中はダミーデータ・匿名化資料のみ使用。Day 4でプライバシー運用ルールを必ず確認。</td>
+      </tr>
+      <tr>
+        <td>ツール側の仕様変更</td>
+        <td>Web教材として常時更新可能な構造を採用。月次でメンテナンス実施。UI変更時は即座に教材に反映。</td>
+      </tr>
+      <tr>
+        <td>受講者間のITリテラシー差</td>
+        <td>6職種別プロンプトと「困ったら使えるお守りプロンプト集」（Day5付録）で底上げ。クリック箇所を全て明記。</td>
+      </tr>
+      <tr>
+        <td>業務適用への抵抗</td>
+        <td>Day5の業務棚卸しワークで個別最適化。「同僚向けデモ」シナリオ作成で組織内推進者を育成。</td>
+      </tr>
+      <tr>
+        <td>研修効果の測定</td>
+        <td>30日後にフォローアップアンケート実施。時間削減効果を実測値で報告。</td>
+      </tr>
+    </table>
+  </section>
+
+  <section id="sec10">
+    <h2>10. 実施スケジュール提案</h2>
+
+    <h3>標準スケジュール（2週間プログラム）</h3>
+    <table>
+      <tr><th>週</th><th>曜日</th><th>内容</th><th>時間</th></tr>
+      <tr><td>第1週</td><td>月曜</td><td>Day 1: Claudeを自分仕様にする</td><td>2時間</td></tr>
+      <tr><td>第1週</td><td>水曜</td><td>Day 2: 「読む」「まとめる」を委任する</td><td>2時間</td></tr>
+      <tr><td>第1週</td><td>金曜</td><td>Day 3: データとスライドを自動化する</td><td>2時間</td></tr>
+      <tr><td>第2週</td><td>火曜</td><td>Day 4: 周辺ツールと繋ぐ</td><td>2時間</td></tr>
+      <tr><td>第2週</td><td>木曜</td><td>Day 5: 自分の業務に組み込む</td><td>2時間</td></tr>
+      <tr><td colspan="3" style="text-align:center;background:#f8f7fc">受講者各自で30日ロードマップを実行</td><td></td></tr>
+      <tr><td>30日後</td><td>—</td><td>フォローアップ（希望者対象）</td><td>30分</td></tr>
+    </table>
+
+    <h3>柔軟な調整</h3>
+    <ul>
+      <li>1日に2 Day連続実施で1週間圧縮も可能</li>
+      <li>1ヶ月に1 Dayずつのゆったり進行も可能</li>
+      <li>部署別開催・全社一括開催どちらも対応</li>
+    </ul>
+  </section>
+
+  <section id="sec11">
+    <h2>11. 結語</h2>
+
+    <div class="conclusion">
+      <p>
+        本研修は「研修受けたが業務に活かせていない」という典型的な失敗を、ハンズオン中心の設計と職種別教材で乗り越える設計となっております。
+      </p>
+      <p>
+        5日間×2時間という現実的な時間投資で、職員が自走できる状態に到達し、その後30日で業務定着を実現する仕組みです。
+      </p>
+      <p style="margin-bottom:0">
+        DX推進・働き方改革・業務効率化の3つの政策目標に同時に貢献する施策として、ぜひご検討くださいますようお願い申し上げます。
+      </p>
+    </div>
+  </section>
+
+  <div class="footer">
+    本提案に関するお問合せは（提案者連絡先）まで<br>
+    教材URL: <a href="https://atsunaricoda-maker.github.io/claude-chat-course/" style="color:var(--primary)">https://atsunaricoda-maker.github.io/claude-chat-course/</a>
+  </div>
+
+</div>
+
+</body>
+</html>

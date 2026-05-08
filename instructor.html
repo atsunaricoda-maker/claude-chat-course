@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>講師用ガイド — Claude Chat 5日間ハンズオン研修</title>
+<style>
+  :root {
+    --primary: #6c47ff; --primary-dark: #4a2bd4;
+    --bg: #f6f5fa; --slide-bg: #ffffff;
+    --text: #1a1a2e; --muted: #6b7280; --accent: #ff6b35;
+    --code-bg: #1e1e2e; --code-text: #e0e0f0;
+    --border: #e5e5ea; --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; z-index: 10; gap: 16px; }
+  .back-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--muted); text-decoration: none; transition: all 0.15s; }
+  .back-btn:hover { background: #f0eefc; color: var(--primary); border-color: var(--primary); }
+  .topbar h1 { font-size: 14px; font-weight: 600; flex: 1; }
+  .topbar h1 .day-tag { color: var(--accent); margin-right: 8px; font-size: 11px; letter-spacing: 0.1em; }
+  .stage { position: absolute; top: 56px; bottom: 64px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .slide { background: var(--slide-bg); width: 100%; max-width: 1200px; height: 100%; max-height: 720px; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 48px 64px; overflow: auto; display: none; animation: fadeIn 0.3s ease; }
+  .slide.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .slide h2 { font-size: 30px; font-weight: 700; margin-bottom: 8px; border-left: 6px solid var(--accent); padding-left: 16px; }
+  .slide h3 { font-size: 18px; margin: 18px 0 10px; color: var(--accent); }
+  .slide h4 { font-size: 15px; margin: 12px 0 6px; }
+  .slide p { margin-bottom: 10px; font-size: 14px; }
+  .slide ul, .slide ol { margin: 10px 0 10px 24px; }
+  .slide li { margin-bottom: 4px; font-size: 14px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .timing { display: inline-block; background: var(--accent); color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .card { background: #f8f7fc; border-radius: 10px; padding: 14px 16px; border-left: 4px solid var(--primary); position: relative; }
+  .card h4 { margin-top: 0; color: var(--primary-dark); font-size: 13px; }
+  .card p { font-size: 13px; }
+  .card.warn { border-left-color: var(--accent); background: #fff4ee; }
+  .card.ok { border-left-color: var(--success); background: #f0fdf4; }
+  .card.script { border-left-color: var(--primary-dark); background: #f0eefc; }
+  .script-text { font-size: 13px; line-height: 1.7; font-style: italic; color: var(--primary-dark); }
+  .key-msg { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 14px 18px; border-radius: 8px; margin: 12px 0; font-size: 14px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f8f7fc; color: var(--primary-dark); font-weight: 600; }
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { padding-left: 24px; position: relative; margin-bottom: 6px; font-size: 14px; }
+  .checklist li::before { content: "□"; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+  .qa-item { background: #f8f7fc; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; }
+  .qa-q { color: var(--primary-dark); font-weight: 600; margin-bottom: 4px; }
+  .qa-q::before { content: "Q. "; }
+  .qa-a { color: var(--text); padding-left: 20px; position: relative; }
+  .qa-a::before { content: "A."; color: var(--accent); font-weight: 600; position: absolute; left: 0; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10; }
+  .nav-btn { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .nav-btn:hover { background: #e85522; }
+  .nav-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+  .slide-info { font-size: 13px; color: var(--muted); }
+  .progress { flex: 1; max-width: 320px; height: 6px; background: var(--border); border-radius: 3px; margin: 0 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .title-slide { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%; }
+  .title-slide.active { display: flex; }
+  .title-slide .day-num { font-size: 14px; color: var(--accent); letter-spacing: 0.2em; font-weight: 600; margin-bottom: 16px; }
+  .title-slide h1 { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; color: transparent; margin-bottom: 16px; border: none; padding: 0; line-height: 1.4; }
+  .title-slide .lead { font-size: 18px; color: var(--muted); margin-bottom: 24px; max-width: 700px; }
+  .title-slide .meta-box { background: #f8f7fc; border-radius: 12px; padding: 20px 28px; text-align: left; max-width: 600px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="claude-chat-course.html" class="back-btn">← トップに戻る</a>
+  <h1><span class="day-tag">講師用ガイド</span>Claude Chat 5日間ハンズオン研修</h1>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<div class="bottom-nav">
+  <button class="nav-btn" id="prevBtn">← 前へ</button>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span class="slide-info" id="slideInfo">1 / 1</span>
+  <button class="nav-btn" id="nextBtn">次へ →</button>
+</div>
+
+<script>
+const slides = [
+  { type: "title", html: `
+    <div class="day-num">INSTRUCTOR GUIDE</div>
+    <h1>講師用ガイド<br>Claude Chat 5日間ハンズオン研修</h1>
+    <p class="lead">講座を成功させるための、開講前準備・各日の進行・Q&A 対応・クロージングまでを網羅</p>
+    <div class="meta-box">
+      <h4 style="color:var(--accent); margin-bottom:8px;">使い方</h4>
+      <ul>
+        <li>講師はこのガイドを開きながら、参加者用ページ（day1〜5）を画面共有して進行します</li>
+        <li>各日の進行ガイドには「キーメッセージ」「タイムマネジメント」「つまずきポイント」を記載</li>
+        <li><kbd>← →</kbd> キーまたは下部ボタンでスライド移動</li>
+      </ul>
+    </div>
+  `},
+
+  { html: `
+    <h2>開講前チェックリスト <span class="timing">講座開始30分前</span></h2>
+    <p class="subtitle">講師が開講前に必ず確認すべき項目</p>
+    <ul class="checklist">
+      <li>講師端末で claude.ai にログイン済み・操作可能</li>
+      <li>受講者用教材URL（atsunaricoda-maker.github.io/claude-chat-course/）が表示できる</li>
+      <li>画面共有テスト済み（オンラインの場合）</li>
+      <li>会議室のプロジェクター・マイク・録画準備（対面の場合）</li>
+      <li>受講者リスト（職種を把握）を手元に</li>
+      <li>当日のサンプルファイル（PDF・CSV・議事録）を準備</li>
+      <li>機密情報取扱いガイドラインを共有予定</li>
+      <li>休憩タイミング（90分目安で5分）を決定</li>
+      <li>Q&A窓口（チャット・挙手等）の運用ルール決定</li>
+    </ul>
+    <div class="key-msg">⚠ 当日の前に、教材ページをブラウザのブックマークバーに登録しておくと講座中の切替がスムーズ</div>
+  `},
+
+  { html: `
+    <h2>開講挨拶のテンプレート <span class="timing">10分</span></h2>
+    <p class="subtitle">そのまま読んでもよし、自分の言葉に変えてもよし</p>
+    <div class="card script">
+      <div class="script-text">
+        「皆さん、こんにちは。本日から5日間にわたり『Claude Chat 5日間ハンズオン研修』を担当させていただきます◯◯です。
+        <br><br>
+        この研修の目的は『参加した皆さん全員が、講座終了時にClaudeを自分の業務に組み込める状態になっていること』です。聞いて終わり、ではなく、実際に手を動かし、自分のデータを使って演習していただきます。
+        <br><br>
+        ですので、できれば普段使っているメール・議事録・データなどを手元にご用意ください。難しい操作はありません。一緒に進めていきましょう。」
+      </div>
+    </div>
+    <h3>続けて伝えるべき4つのこと</h3>
+    <ol>
+      <li><b>全体構成</b>：5日間×2時間で、最終日には自分の業務をフルClaude化する設計まで完成</li>
+      <li><b>機密情報の扱い</b>：個人情報・顧客名は伏せる、ダミーデータ歓迎</li>
+      <li><b>つまずいたら即質問</b>：恥ずかしがらずに。後で聞いたほうが時間ロスが大きい</li>
+      <li><b>復習教材</b>：URLをいま共有します。スマホでも見られます</li>
+    </ol>
+  `},
+
+  { html: `
+    <h2>アイスブレイク <span class="timing">10分</span></h2>
+    <p class="subtitle">受講者の職種・期待を把握する短いラウンド</p>
+    <h3>30秒自己紹介ラウンド</h3>
+    <ul>
+      <li>各人30秒で：氏名・職種・「Claudeで一番楽にしたい業務」</li>
+      <li>講師は職種をメモ（後で職種別タブの説明で使う）</li>
+    </ul>
+    <h3>聞き出しのコツ</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>OK な聞き方</h4>
+        <p>「営業の方ですね。いま週次報告にかかる時間は？」<br>「経理さんは月次決算で詰まりがちですか？」</p>
+      </div>
+      <div class="card warn">
+        <h4>避けたい聞き方</h4>
+        <p>「ITは得意ですか？」（劣等感を生む）<br>「これは難しいですよ」（やる前から萎える）</p>
+      </div>
+    </div>
+    <div class="key-msg">💡 受講者から出たキーワードは Day 5 の業務棚卸しで再活用できる</div>
+  `},
+
+  { html: `
+    <h2>Day 1 進行ガイド：Claudeを自分仕様にする <span class="timing">120分</span></h2>
+    <h3>キーメッセージ（受講者に伝えること）</h3>
+    <ul>
+      <li>Claudeは「毎回ゼロから」ではなく「自分のことを覚えてくれる相棒」になる</li>
+      <li>Project とMemory は今日の主役。これを設定するだけで、明日からの会話が変わる</li>
+    </ul>
+    <h3>タイムマネジメント</h3>
+    <table>
+      <tr><th>時間</th><th>内容</th><th>注意点</th></tr>
+      <tr><td>0-15分</td><td>アカウント・UI案内</td><td>未ログイン者がいないか確認</td></tr>
+      <tr><td>15-45分</td><td>Project作成 + 指示文</td><td>職種別タブから自分のものを選ばせる</td></tr>
+      <tr><td>45-80分</td><td>文体学習（Project knowledge）</td><td>機密に注意。ダミーでOK</td></tr>
+      <tr><td>80-105分</td><td>Memory有効化と基本情報</td><td>Memory機能がオフの人をフォロー</td></tr>
+      <tr><td>105-120分</td><td>振り返り・宿題説明</td><td>次回の準備物（PDF、議事録）を念押し</td></tr>
+    </table>
+    <h3>受講者がつまずく場所 TOP3</h3>
+    <ol>
+      <li><b>「Settings」が見つからない</b> → 日本語UIの方は「設定」と説明（教材に併記済み）</li>
+      <li><b>過去メールをアップする心理的抵抗</b> → 「ダミーで全然OK、個人情報は黒塗り」と明確化</li>
+      <li><b>Memoryがオフ</b> → Free プランでは制限あり、Pro 以上を推奨</li>
+    </ol>
+  `},
+
+  { html: `
+    <h2>Day 2 進行ガイド：「読む」「まとめる」を委任する <span class="timing">120分</span></h2>
+    <h3>キーメッセージ</h3>
+    <ul>
+      <li>「読む時間」と「使う時間」は別物。Claudeに読ませて、自分は使うことに専念</li>
+      <li>議事録は1時間の会議で90分の後処理を生む。これを10分に</li>
+    </ul>
+    <h3>タイムマネジメント</h3>
+    <table>
+      <tr><th>時間</th><th>内容</th><th>注意点</th></tr>
+      <tr><td>0-10分</td><td>Day1振り返り</td><td>「Project使ってみた感想」を聞く</td></tr>
+      <tr><td>10-35分</td><td>PDF要約 Lv1</td><td>各自のPDFで実演</td></tr>
+      <tr><td>35-70分</td><td>議事録→ToDo Lv2</td><td>音声ファイルが大きい場合は分割を案内</td></tr>
+      <tr><td>70-100分</td><td>Artifacts 1枚資料</td><td>編集を体験させるのが重要</td></tr>
+      <tr><td>100-115分</td><td>Artifacts 編集 Lv2</td><td>「右上のCopy/Download」を見せる</td></tr>
+      <tr><td>115-120分</td><td>振り返り・宿題</td><td>次回はExcel/CSVを準備</td></tr>
+    </table>
+    <h3>受講者がつまずく場所 TOP3</h3>
+    <ol>
+      <li><b>音声ファイルが大きすぎてアップできない</b> → 30分以上は分割 or 文字起こし先行</li>
+      <li><b>Artifactsが画面右側に出ない</b> → 入力欄の「Artifact出力」設定をオン</li>
+      <li><b>機密情報の判断</b> → 「迷ったらA社・B社に置換」と明示</li>
+    </ol>
+  `},
+
+  { html: `
+    <h2>Day 3 進行ガイド：データとスライドを自動化する <span class="timing">120分</span></h2>
+    <h3>キーメッセージ</h3>
+    <ul>
+      <li>Skill = Claudeに専門のプロ知識を装着させるパッケージ</li>
+      <li>Excel関数・PPTデザインを覚えなくていい時代が来た</li>
+    </ul>
+    <h3>タイムマネジメント</h3>
+    <table>
+      <tr><th>時間</th><th>内容</th><th>注意点</th></tr>
+      <tr><td>0-10分</td><td>Skill とは何か（カタログ・ベネフィット）</td><td>カテゴリ4種で全体像を示す</td></tr>
+      <tr><td>10-25分</td><td>Skill の設定方法（事前準備）</td><td>FAQも一緒に説明、後の混乱を防ぐ</td></tr>
+      <tr><td>25-30分</td><td>呼び出し方（/）</td><td>実演必須</td></tr>
+      <tr><td>30-60分</td><td>/xlsx 月次レポート Lv1</td><td>各自のCSVで実演</td></tr>
+      <tr><td>60-90分</td><td>/xlsx グラフ・分析 Lv2</td><td>Lv1のデータをそのまま使う</td></tr>
+      <tr><td>90-115分</td><td>/pptx スライド Lv1+Lv2</td><td>ブランドに合わせた版も時間あれば</td></tr>
+      <tr><td>115-120分</td><td>振り返り・宿題</td><td>次回はGmail/Calendar接続準備</td></tr>
+    </table>
+    <h3>受講者がつまずく場所 TOP3</h3>
+    <ol>
+      <li><b>/xlsx が候補に出ない</b> → File creation がOFF。Settings → Capabilities/Tools を確認</li>
+      <li><b>会社のClaudeでSkillが使えない</b> → 管理者制限。情シス相談を案内</li>
+      <li><b>生成されたExcelの書式が崩れる</b> → 「具体的な書式指定」を追記して再生成</li>
+    </ol>
+  `},
+
+  { html: `
+    <h2>Day 4 進行ガイド：周辺ツールと繋ぐ <span class="timing">120分</span></h2>
+    <h3>キーメッセージ</h3>
+    <ul>
+      <li>Connector = 外部ツールとClaudeを直接つなぐ橋。アプリ往復ゼロへ</li>
+      <li>朝のブリーフィング15分が3分に</li>
+    </ul>
+    <div class="card warn">
+      <h4>⚠ 重要：プライバシー教育を徹底</h4>
+      <p>Day 4は技術的にもセキュリティ的にも繊細な日。「読み取りのみ推奨」「メール送信は自分の手で」を最低3回繰り返す。</p>
+    </div>
+    <h3>タイムマネジメント</h3>
+    <table>
+      <tr><th>時間</th><th>内容</th><th>注意点</th></tr>
+      <tr><td>0-15分</td><td>Connector とは・カタログ・ベネフィット</td><td></td></tr>
+      <tr><td>15-30分</td><td>設定方法・FAQ・プライバシー</td><td>FAQ4つ全て触れる</td></tr>
+      <tr><td>30-60分</td><td>Gmail接続・要約</td><td>個人アカウントを推奨（業務は情シス確認後）</td></tr>
+      <tr><td>60-90分</td><td>Calendar接続・週次プラン</td><td></td></tr>
+      <tr><td>90-110分</td><td>Drive接続・横断検索</td><td></td></tr>
+      <tr><td>110-120分</td><td>3ツール統合プロンプト・振り返り</td><td></td></tr>
+    </table>
+    <h3>受講者がつまずく場所 TOP3</h3>
+    <ol>
+      <li><b>Connect がグレーアウト</b> → 管理者制限。情シス相談を案内</li>
+      <li><b>会社のGoogleアカウント接続NG</b> → 個人アカウントで演習、本番は情シス許可後</li>
+      <li><b>Connectorで日本語の予定が文字化け</b> → 通常起きないが、起きたら再接続を案内</li>
+    </ol>
+  `},
+
+  { html: `
+    <h2>Day 5 進行ガイド：自分の業務に組み込む <span class="timing">120分</span></h2>
+    <h3>キーメッセージ</h3>
+    <ul>
+      <li>これまでの学びを「明日からの定常業務」に変換する日</li>
+      <li>講師が答えを与えるのではなく、各自が設計する</li>
+    </ul>
+    <h3>タイムマネジメント</h3>
+    <table>
+      <tr><th>時間</th><th>内容</th><th>注意点</th></tr>
+      <tr><td>0-30分</td><td>業務棚卸しワーク</td><td>個人作業。各自20項目以上書き出す</td></tr>
+      <tr><td>30-60分</td><td>1業務をフルClaude化</td><td>TOP3から1つ選び、Claudeに設計させる</td></tr>
+      <tr><td>60-90分</td><td>同僚向けデモ準備</td><td>3分シナリオを各自作成</td></tr>
+      <tr><td>90-110分</td><td>30日ロードマップ</td><td>これも各自Claudeに作らせる</td></tr>
+      <tr><td>110-120分</td><td>修了確認・継続のコツ</td><td>受講者全員に「最も効果がありそうな業務は？」を発言してもらう</td></tr>
+    </table>
+    <h3>講師の役割</h3>
+    <ul>
+      <li><b>個別質問対応</b>：手が止まっている人に声かけ</li>
+      <li><b>例の提示</b>：困っている人には他の受講者の例を共有</li>
+      <li><b>励まし</b>：「完璧でなくてOK、後から修正できる」を繰り返す</li>
+    </ul>
+  `},
+
+  { html: `
+    <h2>共通：ハンズオン進行のコツ</h2>
+    <h3>受講者を「置いていかない」3つの原則</h3>
+    <div class="grid-3">
+      <div class="card">
+        <h4>① 1動作ずつ実演</h4>
+        <p>「ではここをクリックします」と言ったら、画面で実際にクリック。受講者は3秒遅れて追いつく。</p>
+      </div>
+      <div class="card">
+        <h4>② 2回繰り返す</h4>
+        <p>大事な操作は1回目「やってみせる」、2回目「言葉だけで指示」。これで定着する。</p>
+      </div>
+      <div class="card">
+        <h4>③ 詰まりサインを見逃さない</h4>
+        <p>静かになったら詰まっている。「いまどの画面ですか？」と聞く。</p>
+      </div>
+    </div>
+    <h3>NG行動</h3>
+    <ul class="checklist">
+      <li>受講者を見ずに講師の画面だけを見る</li>
+      <li>1回しか説明しない</li>
+      <li>「簡単ですよね」と言う（劣等感を生む）</li>
+      <li>専門用語を補足なしで使う</li>
+      <li>「これは時間がないので飛ばします」（飛ばすほど初学者は混乱）</li>
+    </ul>
+  `},
+
+  { html: `
+    <h2>機密情報の取扱い：必ず伝えること</h2>
+    <p class="subtitle">講座の最初と、Day 4 で再度強調</p>
+    <h3>3つのルール</h3>
+    <div class="grid-3">
+      <div class="card warn">
+        <h4>① 個人情報は黒塗り</h4>
+        <p>氏名・連絡先・口座番号・マイナンバー → 必ず削除 or 置換</p>
+      </div>
+      <div class="card warn">
+        <h4>② 顧客名は仮名化</h4>
+        <p>A社・B社・◯◯案件 → 業務内容は伝えつつ、特定情報は伏せる</p>
+      </div>
+      <div class="card warn">
+        <h4>③ 機密文書は確認後</h4>
+        <p>会社の機密度ガイドラインに照らして、Claudeに渡してよいか判断</p>
+      </div>
+    </div>
+    <h3>受講者から「これ大丈夫？」と聞かれたら</h3>
+    <div class="card script">
+      <div class="script-text">
+        「迷ったら、まず固有名詞を伏せて、業務内容と構造だけClaudeに伝えてみてください。<br>
+        それでも不安があれば、社内の情シスやコンプライアンス担当に確認してから本番投入する、というのが安全です」
+      </div>
+    </div>
+    <div class="key-msg">講師は法的判断はしない。「迷ったら社内ポリシーに照らす」を一貫して伝える</div>
+  `},
+
+  { html: `
+    <h2>よくある質問 TOP10（事前準備）</h2>
+    <p class="subtitle">講師が即答できるよう、回答テンプレートを用意</p>
+
+    <div class="qa-item">
+      <div class="qa-q">Free プランでも使えますか？</div>
+      <div class="qa-a">基本機能は使えますが、Memory・Project・Skill の一部に制限があります。本研修の真価は Pro 以上で発揮されます。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">英語で返ってくるのですが</div>
+      <div class="qa-a">「日本語で答えて」と1回送ればOK。Project の指示に「日本語で答えて」と追記すると以降不要です。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">学習データに使われませんか？</div>
+      <div class="qa-a">プランによります。Pro/Team/Enterprise では原則学習に使われません。Freeはオプトイン/アウトを設定で確認してください。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">業務で使ってもいい？情シス確認は？</div>
+      <div class="qa-a">必ず社内ポリシーを確認してください。本研修は技術的な使い方を教えるものであり、社内承認は別途必要です。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">同じプロンプトを毎回コピペするのが面倒</div>
+      <div class="qa-a">Project に固定指示として入れる、または独自Skill（/skill-creator）で自分専用コマンド化できます。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">回答が遅い／止まる</div>
+      <div class="qa-a">混雑時間帯（日本の朝・米国の昼）は遅くなりがち。モデルをSonnet/Haikuに切り替えで速くなります。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">添付ファイルのサイズ上限は？</div>
+      <div class="qa-a">プランによりますが概ね数十MB。長い動画・音声は分割を推奨。</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">過去のチャットを検索したい</div>
+      <div class="qa-a">左サイドバーで検索可能。重要な会話はProjectにまとめると後で見つけやすいです。</div>
+    </div>
+  `},
+
+  { html: `
+    <h2>講座中に詰まった人への対処</h2>
+    <h3>5パターンと対処法</h3>
+    <table>
+      <tr><th>状況</th><th>声かけ例</th><th>対処</th></tr>
+      <tr>
+        <td>画面が違う</td>
+        <td>「いまどの画面ですか？」</td>
+        <td>個別に確認。1〜2分で復帰可能なら戻す、不可なら次のスライドで合流</td>
+      </tr>
+      <tr>
+        <td>クリック場所が分からない</td>
+        <td>「画面の左下、自分のアイコンです」</td>
+        <td>具体的な場所＋色など視覚情報を付加</td>
+      </tr>
+      <tr>
+        <td>プロンプトがうまく動かない</td>
+        <td>「コピーしたものを貼っただけですか？括弧の中を書き換える必要があります」</td>
+        <td>カッコ内の置換が漏れていることが多い</td>
+      </tr>
+      <tr>
+        <td>機能がオフ</td>
+        <td>「Settings → Capabilities を開きましょう」</td>
+        <td>事前準備不足。次回までに有効化を宿題に</td>
+      </tr>
+      <tr>
+        <td>明らかに困っているが質問しない</td>
+        <td>「○○さん、画面共有してもらえますか？」</td>
+        <td>気持ちを尊重しつつ、個別対応のオファー</td>
+      </tr>
+    </table>
+    <div class="key-msg">💡 「分からない人がいる」を前提に進行する。1人の遅れは全員の学びになる</div>
+  `},
+
+  { html: `
+    <h2>講座後フォロー（30日支援）</h2>
+    <h3>Day 5 終了時に伝えること</h3>
+    <ul>
+      <li>30日ロードマップは必ず1日目から実行</li>
+      <li>1日でも空いたら、その日のページを開き直すだけでOK</li>
+      <li>同僚デモは2週間以内に1回はやる</li>
+      <li>困ったらいつでも教材URLに戻ってこられる</li>
+    </ul>
+    <h3>30日後フォローアップ案内テンプレ（メール）</h3>
+    <div class="card script">
+      <div class="script-text">
+        件名：【Claude研修】30日経過のフォローアップ<br><br>
+        ○○様<br><br>
+        Claude研修から30日が経ちました。お疲れ様です。<br>
+        受講後、業務にどの程度組み込めているか、簡単な振り返りをお願いします。<br><br>
+        ・どの業務にClaudeを活用していますか？<br>
+        ・体感での時間削減効果は？<br>
+        ・困っていること・聞きたいことは？<br><br>
+        ご希望の方には30分のフォローアップセッション（無料）も承ります。
+      </div>
+    </div>
+    <h3>講師としての振り返り</h3>
+    <ul class="checklist">
+      <li>受講者ごとの参加度・進捗を記録</li>
+      <li>つまずきポイントを次回研修に反映</li>
+      <li>受講者から出た新しい使い方を教材に追加</li>
+      <li>30日後の効果測定結果を提案書に反映</li>
+    </ul>
+  `},
+
+  { html: `
+    <h2>クロージング：研修最終日の締め</h2>
+    <p class="subtitle">そのまま読んでも、自分の言葉に変えてもOK</p>
+    <div class="card script">
+      <div class="script-text">
+        「5日間お疲れ様でした。<br><br>
+        この5日間で皆さんは、Claudeを単なる『便利なAI』ではなく『自分の業務に組み込まれた相棒』に変える設計を完成させました。<br><br>
+        ここから先、研修で得た知識を仕事の習慣に変えていくのが本番です。<br>
+        完璧でなくていい。1日1回でいいから使ってみる。それを30日続ければ、確実に景色が変わります。<br><br>
+        困ったときは、いちばん最初に作ったProjectに『困っている』と話しかけてください。きっと一緒に解決策を探してくれます。<br><br>
+        皆さんの仕事が、明日から少しでも楽になりますように。お疲れ様でした。」
+      </div>
+    </div>
+    <h3>最後に伝える3つのこと</h3>
+    <ul>
+      <li>教材URLは <b>常時アクセス可能</b>。困ったらいつでも戻ってこられる</li>
+      <li>30日後のフォローアップを案内</li>
+      <li>同僚に教えることが最大の定着策。「3分デモ」を活用してほしい</li>
+    </ul>
+    <div class="key-msg" style="text-align:center;">研修お疲れ様でした 🎉</div>
+  `},
+];
+
+let currentSlide = 0;
+const stage = document.getElementById('stage');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const slideInfo = document.getElementById('slideInfo');
+const progressBar = document.getElementById('progressBar');
+
+slides.forEach((slide) => {
+  const div = document.createElement('div');
+  div.className = 'slide' + (slide.type === 'title' ? ' title-slide' : '');
+  div.innerHTML = slide.html;
+  stage.appendChild(div);
+});
+
+function showSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  currentSlide = i;
+  document.querySelectorAll('.slide').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  slideInfo.textContent = `${i + 1} / ${slides.length}`;
+  progressBar.style.width = `${((i + 1) / slides.length) * 100}%`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === slides.length - 1;
+}
+prevBtn.onclick = () => showSlide(currentSlide - 1);
+nextBtn.onclick = () => showSlide(currentSlide + 1);
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { showSlide(currentSlide + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
+});
+
+showSlide(0);
+</script>
+</body>
+</html>
