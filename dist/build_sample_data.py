@@ -251,7 +251,8 @@ MEETING_MINUTES = """\
 
 def build_minutes():
     out = os.path.join(OUT_DIR, "サンプル商事_経営会議議事録_2026年4月.txt")
-    with open(out, "w", encoding="utf-8") as f:
+    # utf-8-sig (BOM付き) でWindows標準ツール（メモ帳等）でも文字化けしない
+    with open(out, "w", encoding="utf-8-sig") as f:
         f.write(MEETING_MINUTES)
     return out
 
@@ -820,7 +821,8 @@ README_TEXT = """\
 
 def build_readme():
     out = os.path.join(OUT_DIR, "README.txt")
-    with open(out, "w", encoding="utf-8") as f:
+    # utf-8-sig (BOM付き) でメモ帳等でも文字化けしない
+    with open(out, "w", encoding="utf-8-sig") as f:
         f.write(README_TEXT)
     return out
 
