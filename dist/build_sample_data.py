@@ -268,11 +268,16 @@ def build_strategy_memo():
     from docx.oxml.ns import qn
     from docx.oxml import OxmlElement
 
-    JP = "Yu Mincho"
-    JP_HEAD = "Yu Gothic"
+    # Yu Mincho / Yu Gothic は Windows 10+ 専用なので、より普遍的な
+    # MS P明朝 / MS Pゴシック を使用 (全Windows・Word for Mac・Google Docs で
+    # 文字化けせず表示される)
+    JP = "ＭＳ Ｐ明朝"
+    JP_HEAD = "ＭＳ Ｐゴシック"
 
     def set_run_jp(run, font, size, color=None, bold=False):
-        run.font.name = font
+        # ASCII (英数字) は ascii/hAnsi=Calibri、日本語は eastAsia=MS Pフォント
+        # こうすると、Latin文字は標準フォントで美しく、日本語は確実に MS Pフォント
+        # で表示される (どの環境でも文字化けしない)
         run.font.size = Pt(size)
         run.font.bold = bold
         if color is not None:
@@ -283,17 +288,17 @@ def build_strategy_memo():
             rFonts = OxmlElement("w:rFonts")
             rPr.insert(0, rFonts)
         rFonts.set(qn("w:eastAsia"), font)
-        rFonts.set(qn("w:ascii"), font)
-        rFonts.set(qn("w:hAnsi"), font)
+        rFonts.set(qn("w:ascii"), "Calibri")
+        rFonts.set(qn("w:hAnsi"), "Calibri")
 
     doc = Document()
     sec = doc.sections[0]
     sec.top_margin = Mm(20); sec.bottom_margin = Mm(20)
     sec.left_margin = Mm(22); sec.right_margin = Mm(22)
 
-    # default style
+    # default style: Latin=Calibri, EastAsia=MS P明朝
     style = doc.styles["Normal"]
-    style.font.name = JP
+    style.font.name = "Calibri"
     style.font.size = Pt(10.5)
     rPr = style.element.get_or_add_rPr()
     rFonts = rPr.find(qn("w:rFonts"))
@@ -301,6 +306,8 @@ def build_strategy_memo():
         rFonts = OxmlElement("w:rFonts")
         rPr.insert(0, rFonts)
     rFonts.set(qn("w:eastAsia"), JP)
+    rFonts.set(qn("w:ascii"), "Calibri")
+    rFonts.set(qn("w:hAnsi"), "Calibri")
 
     # title
     p = doc.add_paragraph()
