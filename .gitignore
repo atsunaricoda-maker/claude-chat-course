@@ -1,1 +1,7 @@
 simplified-insurance-app.html
+
+# Generated artifacts in dist/ (regenerate via dist/build_*.py)
+dist/*.pptx
+dist/*.docx
+dist/sample_data/
+dist/__pycache__/

@@ -84,6 +84,12 @@
   .prompt-multi-box { background: var(--code-bg); color: var(--code-text); border-radius: 0 10px 10px 10px; padding: 16px 18px; font-family: "SF Mono", Consolas, "Hiragino Kaku Gothic ProN", monospace; font-size: 13px; margin-bottom: 12px; position: relative; line-height: 1.55; max-height: 280px; overflow: auto; }
   .prompt-content { display: none; white-space: pre-wrap; }
   .prompt-content.active { display: block; }
+  .sample-download { background: linear-gradient(135deg, #f0eefc 0%, #fff4ee 100%); border-left: 4px solid var(--primary); border-radius: 10px; padding: 12px 16px; margin: 14px 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .sample-download-text { flex: 1; min-width: 220px; font-size: 13px; color: var(--text); line-height: 1.55; }
+  .sample-download-text b { color: var(--primary-dark); }
+  .sample-download-text small { color: var(--muted); font-size: 11px; }
+  .sample-download-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white !important; text-decoration: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; white-space: nowrap; transition: all 0.15s; }
+  .sample-download-btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108, 71, 255, 0.25); }
 </style>
 </head>
 <body>
@@ -286,6 +292,14 @@ const slides = [
   { html: `
     <h2>ハンズオン①：PDFを要約（Lv1）</h2>
     <p class="subtitle">所要 25分 / 用意したPDFを使う</p>
+    <div class="sample-download">
+      <div class="sample-download-text">
+        <b>📦 サンプル商事のサンプルデータ</b><br>
+        手元にPDFがない／機密で躊躇する場合は、架空企業のサンプル業界レポートが使えます。<br>
+        <small>10ページ・PDF・架空のBtoB卸売業界トレンドレポート</small>
+      </div>
+      <a class="sample-download-btn" href="sample_data/サンプル商事_業界レポート2026.pdf" download>📥 業界レポート(PDF)</a>
+    </div>
     <div class="steps">
       <div class="step">Day1で作った「マイ業務アシスタント」Projectを開く</div>
       <div class="step"><span class="ui-hint">+ New chat（新しいチャット）</span> で新規チャット</div>
@@ -319,6 +333,14 @@ const slides = [
   { html: `
     <h2>ハンズオン②：議事録→ToDo（Lv2）</h2>
     <p class="subtitle">所要 35分 / 会議録音 or 文字起こしを使う</p>
+    <div class="sample-download">
+      <div class="sample-download-text">
+        <b>📦 サンプル商事のサンプルデータ</b><br>
+        手元に議事録がない場合は、架空企業の経営会議文字起こし（30分相当）が使えます。<br>
+        <small>テキストファイル・5議題・決定事項とToDo・未決事項あり</small>
+      </div>
+      <a class="sample-download-btn" href="sample_data/サンプル商事_経営会議議事録_2026年4月.txt" download>📥 議事録(TXT)</a>
+    </div>
     <div class="steps">
       <div class="step">新規チャットを開く</div>
       <div class="step">📎 で議事録ファイル添付（音声直接でもOK：.mp3 .m4a .wav）</div>
